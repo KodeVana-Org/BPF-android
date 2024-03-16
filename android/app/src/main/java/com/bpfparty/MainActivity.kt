@@ -1,4 +1,4 @@
-package com.bpf
+package com.bpfparty
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
