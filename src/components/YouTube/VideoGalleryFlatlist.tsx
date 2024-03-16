@@ -13,7 +13,7 @@ const YouTubeVideoFLatlist = () => {
   const fetchVideos = async () => {
     try {
       const response = await axios.get(
-        'http://13.235.94.196:8000/youtube/videos',
+        'http://13.235.94.196:6969/youtube/videos',
       );
       const videosData = response.data.map((video: any) => ({
         ...video,
