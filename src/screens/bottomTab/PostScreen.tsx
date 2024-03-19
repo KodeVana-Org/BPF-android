@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     paddingBottom: 50,
-    marginTop: 20,
+    paddingTop: 20,
   },
   postImage: {
     height: 200,

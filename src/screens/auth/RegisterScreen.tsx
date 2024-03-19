@@ -11,7 +11,7 @@ import {
   ScrollView,
   Image,
 } from 'react-native';
-import {user_register} from '../../api/auth_api';
+import {user_register} from '../../api/auth_apis';
 import LinearGradient from 'react-native-linear-gradient';
 import ChevronLeftLight from '../../assets/icons/ChevronLeftLight';
 import {useNavigation} from '@react-navigation/native';
@@ -47,10 +47,10 @@ const RegisterScreen = () => {
   const [emailPhone, setEmailPhone] = useState('');
   const [password, setPassword] = useState('');
   const handleEmailPhoneInputChange = (text: string) => {
-    setEmailPhone(text);
+    setEmailPhone(text.trim());
   };
   const handlePasswordInputChange = (text: string) => {
-    setPassword(text);
+    setPassword(text.trim());
   };
 
   // Handle input field error messages

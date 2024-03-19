@@ -11,7 +11,7 @@ import Animated, {
 import PostIcon from '../../assets/icons/Gallery';
 import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
-import {AdminParamList} from '../../navigator/adminNavigator';
+import {AdminParamList} from '../../navigator/AdminNavigator';
 
 const FAB_Poster = () => {
   const width = useSharedValue(60);
@@ -24,7 +24,7 @@ const FAB_Poster = () => {
   const handleOpen = () => {
     if (!isOpen.value) {
       width.value = withSpring(200);
-      height.value = withSpring(200);
+      height.value = withSpring(250);
       borderRadius.value = withSpring(10);
       isOpen.value = true;
     }
@@ -73,14 +73,6 @@ const FAB_Poster = () => {
         </Pressable>
         <Pressable
           style={styles.buttonContainer}
-          onPress={() => navigation.navigate('UploadPost')}>
-          <View style={styles.iconContainer}>
-            <PostIcon height={25} width={25} fill="white" />
-          </View>
-          <Text style={styles.text}>Upload Post</Text>
-        </Pressable>
-        <Pressable
-          style={styles.buttonContainer}
           onPress={() => navigation.navigate('EditBanner')}>
           <View style={styles.iconContainer}>
             <Image
@@ -89,6 +81,22 @@ const FAB_Poster = () => {
             />
           </View>
           <Text style={styles.text}>Edit Banner</Text>
+        </Pressable>
+        <Pressable
+          style={styles.buttonContainer}
+          onPress={() => navigation.navigate('UploadPost')}>
+          <View style={styles.iconContainer}>
+            <PostIcon height={25} width={25} fill="white" />
+          </View>
+          <Text style={styles.text}>Upload Post</Text>
+        </Pressable>
+        <Pressable
+          style={styles.buttonContainer}
+          onPress={() => navigation.navigate('UploadGallery')}>
+          <View style={styles.iconContainer}>
+            <PostIcon height={25} width={25} fill="white" />
+          </View>
+          <Text style={styles.text}>Upload Gallery</Text>
         </Pressable>
       </Animated.View>
     </View>

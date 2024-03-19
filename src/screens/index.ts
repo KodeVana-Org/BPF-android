@@ -10,6 +10,7 @@ export {default as SetPassScreen} from './auth/SetPasswordScreen';
 export {default as HomeScreen} from './bottomTab/HomeScreen';
 export {default as PostsScreen} from './bottomTab/PostScreen';
 export {default as VideosScreen} from './bottomTab/VideoScreen';
+export {default as ConferenceScreen} from './bottomTab/ConferenceScreen';
 
 ////////////////////** DRAWER SCREENS **////////////////////
 export {default as ProfileScreen} from './drawer/ProfileScreen';
@@ -30,3 +31,7 @@ export {default as NotificationScreen} from './NotificationScreen';
 export {default as EditBannerScreen} from './admin/EditBannerScreen';
 export {default as EditMemberScreen} from './admin/EditMemberScreen';
 export {default as UploadPostScreen} from './admin/UploadPostScreen';
+export {default as UploadGalleryScreen} from './admin/UploadGalleryScreen';
+
+////////////////////** OUTER SCREENS **////////////////////
+export {default as ConferenceStreamScreen} from './models/ConferenceStreamScreen';

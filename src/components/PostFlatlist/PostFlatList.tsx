@@ -7,7 +7,7 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native';
-import {get_posts} from '../../api/app_data_api';
+import {get_posts} from '../../api/app_data_apis';
 
 const {width} = Dimensions.get('window');
 

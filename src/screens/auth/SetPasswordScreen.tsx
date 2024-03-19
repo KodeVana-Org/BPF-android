@@ -15,7 +15,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import EyeClose from '../../assets/icons/EyeClose';
 import EyeOpen from '../../assets/icons/EyeOpen';
 import {AppContext} from '../../navigator/AppContext';
-import {set_password} from '../../api/auth_api';
+import {set_password} from '../../api/auth_apis';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {validatePassword} from '../../validation/validateInputDetails';
 
@@ -48,10 +48,10 @@ const RegisterScreen = ({route}: Props) => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const handlePasswordInputChange = (text: string) => {
-    setPassword(text);
+    setPassword(text.trim());
   };
   const handleConfirmPasswordInputChange = (text: string) => {
-    setConfirmPassword(text);
+    setConfirmPassword(text.trim());
   };
 
   // Handle input field error messages

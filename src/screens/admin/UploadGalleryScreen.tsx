@@ -8,28 +8,27 @@ import {
   TouchableOpacity,
   Dimensions,
   TextInput,
+  FlatList,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import ImagePicker from 'react-native-image-crop-picker';
 import NavHeader from '../../components/Header/NavHeader';
 import ApiManager from '../../api/ApiManager';
-import useFetchUserData from '../../data/userData';
+import {get_gallery} from '../../api/app_data_apis';
 
-const UploadPostScreen = () => {
+const UploadGalleryScreen = () => {
   const [imageSelectionMessage, setImageSelectionMessage] = useState(
     'No image is selected to upload!',
   );
-  const [postImageUrl, setPostImageUrl] = useState(null);
-  const [postTitle, setPostTitle] = useState('');
-  const [placeholder, setPlaceholder] = useState('Enter post title*');
+  const [galleryImageUrl, setGalleryImageUrl] = useState(null);
+  const [galleryDesc, setGalleryDesc] = useState('');
+  const [placeholder, setPlaceholder] = useState('Enter decription*');
   const [inputFieldColor, setInputFieldColor] = useState('gray');
-  const userData = useFetchUserData();
-  const userID = userData.id;
 
-  // Handle saving post title
-  const handlePostTitleInputChange = (text: string) => {
-    setPostTitle(text.trim());
+  // Handle saving gallery description
+  const handleGalleryDescInputChange = (text: string) => {
+    setGalleryDesc(text.trim());
     setInputFieldColor('gray');
   };
 
@@ -40,42 +39,45 @@ const UploadPostScreen = () => {
       height: 400,
       cropping: true,
     }).then(image => {
-      setPostImageUrl(image.path);
+      setGalleryImageUrl(image.path);
     });
   };
 
-  // Handle upload post
-  const uploadPost = async () => {
-    if (postTitle === '') {
-      setPlaceholder('Title is required!');
+  // Handle upload gallery
+  const uploadGallery = async () => {
+    if (galleryDesc === '') {
+      setPlaceholder('Description is required!');
       setInputFieldColor('red');
       return;
     } else {
       const formData = new FormData();
-      formData.append('postImage', {
-        uri: postImageUrl,
+      formData.append('images', {
+        uri: galleryImageUrl,
         type: 'image/jpeg',
-        name: 'postImage.jpg',
+        name: 'galleryImage.jpg',
       });
-      formData.append('postTitle', postTitle);
-      formData.append('userId', userID);
+      formData.append('descriptions', galleryDesc);
       try {
-        const result = await ApiManager.post('post/create-post', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
+        const result = await ApiManager.post(
+          'youtube/upload-gallery',
+          formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
           },
-        });
+        );
         if (result.status === 200) {
-          console.log('Post uploaded successfully!');
-          setPostImageUrl(null);
-          setImageSelectionMessage('Post uploaded seccessfully!');
+          console.log('Gallery uploaded successfully!');
+          setGalleryImageUrl(null);
+          setImageSelectionMessage('Gallery uploaded seccessfully!');
         } else {
-          console.log('Post not uploaded, please try again!');
+          console.log('Gallery not uploaded, please try again!');
         }
       } catch (error) {
         for (let i = 1; i < 3; i++) {
           const retryResult = await ApiManager.post(
-            'post/create-post',
+            'youtube/upload-gallery',
             formData,
             {
               headers: {
@@ -84,13 +86,13 @@ const UploadPostScreen = () => {
             },
           );
           if (retryResult.status === 200) {
-            console.log('Post uploaded successfully!');
-            setPostImageUrl(null);
-            setImageSelectionMessage('Post uploaded seccessfully!');
+            console.log('Gallery uploaded successfully!');
+            setGalleryImageUrl(null);
+            setImageSelectionMessage('Gallery uploaded seccessfully!');
           }
           console.log('Retry attempt', i);
           if (retryResult.status === 200) {
-            console.log('Post uploaded successfully on retry!');
+            console.log('Gallery uploaded successfully on retry!');
             break;
           }
         }
@@ -98,40 +100,62 @@ const UploadPostScreen = () => {
     }
   };
 
+  // Fetch galley images
+  const [gallery, setGallery] = useState([]);
+  useEffect(() => {
+    const fetchGallery = async () => {
+      try {
+        const response = await get_gallery();
+        if (response && response.gallery) {
+          setGallery(response.gallery);
+        } else {
+          console.error('Gallery data not found in response:', response);
+        }
+      } catch (error) {
+        console.error('Error fetching gallery:', error);
+      }
+    };
+
+    fetchGallery();
+  }, []);
+
   // Handle upload cancellation
   const cancelUpload = () => {
-    setPostImageUrl(null);
+    setGalleryImageUrl(null);
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <Animated.View style={styles.container}>
-        <NavHeader title={'Upload new post'} />
+        <NavHeader title={'Upload gallery'} />
         <ScrollView
           showsVerticalScrollIndicator={false}
           style={styles.uploadPostContainer}>
           <View style={styles.formContainer}>
             <TextInput
               inputMode="text"
-              onChangeText={handlePostTitleInputChange}
-              value={postTitle}
+              onChangeText={handleGalleryDescInputChange}
+              value={galleryDesc}
               style={[styles.inputField, {borderColor: inputFieldColor}]}
               placeholder={placeholder}
               placeholderTextColor={inputFieldColor}
             />
-            {postImageUrl ? (
-              <Image source={{uri: postImageUrl}} style={styles.postImage} />
+            {galleryImageUrl ? (
+              <Image
+                source={{uri: galleryImageUrl}}
+                style={styles.galleryImage}
+              />
             ) : (
               <Text style={styles.imageSelectionMessage}>
                 {imageSelectionMessage}
               </Text>
             )}
             <View style={styles.buttonContainer}>
-              {postImageUrl ? (
+              {galleryImageUrl ? (
                 <View style={styles.buttonContainer}>
                   <TouchableOpacity
                     style={[styles.formButton, styles.uploadButton]}
-                    onPress={uploadPost}>
+                    onPress={uploadGallery}>
                     <Text style={styles.buttonText}>Upload</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
@@ -149,13 +173,31 @@ const UploadPostScreen = () => {
               )}
             </View>
           </View>
+          {/* Display uploaded images */}
+          <View style={styles.galleryContainer}>
+            <FlatList
+              data={gallery}
+              horizontal={false}
+              showsVerticalScrollIndicator={false}
+              keyExtractor={(item, index) => index.toString()}
+              // contentContainerStyle={{paddingRight: horizontal ? 16 : 0}}
+              renderItem={({item}) => (
+                <View style={styles.postContainer}>
+                  <Image
+                    source={{uri: item.imageUrl[0]}}
+                    style={styles.image}
+                  />
+                </View>
+              )}
+            />
+          </View>
         </ScrollView>
       </Animated.View>
     </SafeAreaView>
   );
 };
 
-export default UploadPostScreen;
+export default UploadGalleryScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -193,7 +235,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     paddingVertical: 40,
   },
-  postImage: {
+  galleryImage: {
     borderRadius: 10,
     height: Dimensions.get('window').width - 65,
     width: Dimensions.get('window').width - 65,
@@ -231,5 +273,34 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     fontSize: 18,
     color: '#FFF',
+  },
+  galleryContainer: {
+    flex: 1,
+    gap: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  postContainer: {
+    paddingHorizontal: 10,
+    paddingVertical: 20,
+    flex: 1,
+    gap: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 10,
+    borderWidth: 0.2,
+    width: Dimensions.get('window').width - 40,
+    marginTop: 30,
+  },
+  image: {
+    width: Dimensions.get('window').width - 40,
+    height: 300,
+    borderRadius: 7,
+  },
+  text: {
+    alignSelf: 'flex-start',
+    fontWeight: '400',
+    fontSize: 16,
+    color: '#000',
   },
 });

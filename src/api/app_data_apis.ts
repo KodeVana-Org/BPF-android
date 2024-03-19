@@ -32,3 +32,14 @@ export const get_achievements = async (): Promise<any> => {
     return error.response.data;
   }
 };
+
+/////////////////** GET ALL ACHIEVEMENT **//////////////////
+export const get_banners = async (): Promise<any> => {
+  try {
+    const response = await ApiManager.get('api/all-hero');
+    return response.data;
+  } catch (error: any) {
+    console.log('Error occurred during accessing banners:', error.message);
+    return error.response.data;
+  }
+};

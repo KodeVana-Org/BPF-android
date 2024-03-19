@@ -3,13 +3,19 @@ import {
   BottomTabBarProps,
   createBottomTabNavigator,
 } from '@react-navigation/bottom-tabs';
-import {HomeScreen, PostsScreen, VideosScreen} from '../screens';
+import {
+  HomeScreen,
+  PostsScreen,
+  VideosScreen,
+  ConferenceScreen,
+} from '../screens';
 import CustomBottomTab from '../components/BottomButton/CustomBottomTab';
 
 export type BottomTabParamList = {
   Home: undefined;
   Post: undefined;
   Video: undefined;
+  Conference: undefined;
 };
 
 const CustomBottomTabs = (props: BottomTabBarProps) => {
@@ -26,6 +32,7 @@ const BottomTabNavigator = () => {
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Post" component={PostsScreen} />
       <Tab.Screen name="Video" component={VideosScreen} />
+      <Tab.Screen name="Conference" component={ConferenceScreen} />
     </Tab.Navigator>
   );
 };

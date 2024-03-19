@@ -151,7 +151,18 @@ export const verify_Token = async (data: UserData): Promise<any> => {
     const response = await ApiManager.get('user/auth', data);
     return response.data;
   } catch (error: any) {
-    console.log('Error occurred during accessing gallery:', error.message);
+    console.log('Error occurred accessing user details:', error.message);
+    return error.response.data;
+  }
+};
+
+/////////////////** USER TOKEN VERIFICATION **/////////////////
+export const get_users = async (): Promise<any> => {
+  try {
+    const response = await ApiManager.get('admin/all-user');
+    return response.data;
+  } catch (error: any) {
+    console.log('Error occurred accessing all users:', error.message);
     return error.response.data;
   }
 };

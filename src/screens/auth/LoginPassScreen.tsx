@@ -19,7 +19,7 @@ import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {AuthParamList} from '../../navigator/AuthNavigator';
 import {AppContext} from '../../navigator/AppContext';
-import {user_login_pass} from '../../api/auth_api';
+import {user_login_pass} from '../../api/auth_apis';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   validateEmailPhone,
@@ -48,10 +48,10 @@ const LoginPassScreen = () => {
   const [emailPhone, setEmailPhone] = useState('');
   const [password, setPassword] = useState('');
   const handleEmailPhoneInputChange = (text: string) => {
-    setEmailPhone(text);
+    setEmailPhone(text.trim());
   };
   const handlePasswordInputChange = (text: string) => {
-    setPassword(text);
+    setPassword(text.trim());
   };
 
   // Handle input field error messages

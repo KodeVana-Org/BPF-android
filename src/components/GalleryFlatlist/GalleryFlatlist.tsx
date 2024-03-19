@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import {FlatList, View, Image, StyleSheet, Dimensions} from 'react-native';
-import {get_gallery} from '../../api/app_data_api';
+import {get_gallery} from '../../api/app_data_apis';
 
 const {width} = Dimensions.get('window');
 

@@ -10,6 +10,8 @@ import {
   EditBannerScreen,
   EditMemberScreen,
   UploadPostScreen,
+  UploadGalleryScreen,
+  ConferenceStreamScreen,
 } from '../screens';
 import {AppContext} from './AppContext';
 
@@ -23,6 +25,8 @@ export type RootStackParamList = {
   EditMember: undefined;
   EditBanner: undefined;
   UploadPost: undefined;
+  UploadGallery: undefined;
+  ConferenceStream: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -61,6 +65,11 @@ const RootNavigator = () => {
       <Stack.Screen name="EditBanner" component={EditBannerScreen} />
       <Stack.Screen name="EditMember" component={EditMemberScreen} />
       <Stack.Screen name="UploadPost" component={UploadPostScreen} />
+      <Stack.Screen name="UploadGallery" component={UploadGalleryScreen} />
+      <Stack.Screen
+        name="ConferenceStream"
+        component={ConferenceStreamScreen}
+      />
     </Stack.Navigator>
   );
 };

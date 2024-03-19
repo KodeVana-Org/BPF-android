@@ -13,7 +13,7 @@ import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {SystemBars} from 'react-native-bars';
 
 import Header from '../../components/Header/Header';
-import ImageCarousal from '../../components/Corousel/ImageCarousal';
+import BannerCarousal from '../../components/Corousel/BannerCorousal';
 import PostFlatList from '../../components/PostFlatlist/PostFlatList';
 import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
@@ -55,7 +55,8 @@ const HomeScreen = ({navigation}: any) => {
           {/* If you're not using react-native-bars, you can remove SystemBars */}
           <SystemBars animated={true} barStyle={'light-content'} />
           <Animated.View style={[styles.container]}>
-            <ImageCarousal />
+            {/* Banner carousal */}
+            <BannerCarousal />
             {/* PostList */}
             <View style={styles.postListContainer}>
               <View style={styles.headerNav}>

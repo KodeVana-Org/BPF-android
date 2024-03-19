@@ -24,6 +24,7 @@ const windowHeight = Dimensions.get('window').height;
 
 function CustomDrawer(props: any) {
   const {setNavigateToHome} = useContext(AppContext);
+  const [userName, setUserName] = useState('');
   const [token, setToken] = useState<string | null>(null);
   const drawerNavigation =
     useNavigation<StackNavigationProp<DrawerParamList>>();
@@ -35,6 +36,21 @@ function CustomDrawer(props: any) {
         const accessToken = await AsyncStorage.getItem('AccessToken');
         if (accessToken) {
           setToken(accessToken);
+          if (userData.name === null) {
+            if (userData.userType === 'superAdmin') {
+              setUserName('Super Admin');
+            } else if (userData.userType === 'admin') {
+              setUserName('Admin');
+            } else if (userData.userType === 'post-admin') {
+              setUserName('Post Admin');
+            } else if (userData.userType === 'member') {
+              setUserName('Party member');
+            } else {
+              setUserName('User');
+            }
+          } else {
+            setUserName(userData.name);
+          }
         } else {
           console.log('Access token is null');
         }
@@ -68,8 +84,8 @@ function CustomDrawer(props: any) {
               source={require('../../assets/images/PartyEmblem.png')}
               style={{height: 80, width: 120, opacity: 50}}
             />
-            <Text style={styles.userName}>{userData.email}</Text>
-            <Text style={styles.userID}>{userData.userType}</Text>
+            <Text style={styles.userName}>{userName}</Text>
+            <Text style={styles.userID}>ID: {userData.userId}</Text>
           </Pressable>
         ) : (
           <View style={styles.profileContainer}>

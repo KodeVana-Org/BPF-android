@@ -17,7 +17,7 @@ import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {AuthParamList} from '../../navigator/AuthNavigator';
 import {AppContext} from '../../navigator/AppContext';
-import {user_login_otp} from '../../api/auth_api';
+import {user_login_otp} from '../../api/auth_apis';
 import {validateEmailPhone} from '../../validation/validateInputDetails';
 
 const windowWidth = Dimensions.get('window').width;
@@ -35,7 +35,7 @@ const LoginOtpScreen = () => {
   // Handle saving form data
   const [emailPhone, setEmailPhone] = useState('');
   const handleEmailPhoneInputChange = (text: string) => {
-    setEmailPhone(text);
+    setEmailPhone(text.trim());
   };
 
   // Handle input field error messages

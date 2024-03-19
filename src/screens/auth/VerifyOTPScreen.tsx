@@ -17,7 +17,7 @@ import {
   forgot_pass_otp,
   verify_login_otp,
   verify_register_otp,
-} from '../../api/auth_api';
+} from '../../api/auth_apis';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {AppContext} from '../../navigator/AppContext';
 import {StackNavigationProp} from '@react-navigation/stack';
@@ -53,7 +53,7 @@ const VerifyOTPScreen = ({route}: Props) => {
   const purpose = route.params.Purpose;
   const [otp, setOtp] = useState('');
   const handleOtpInputChange = (text: string) => {
-    setOtp(text);
+    setOtp(text.trim());
   };
 
   // Handle input field error messages

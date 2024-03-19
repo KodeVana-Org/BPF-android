@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {verify_Token} from '../api/auth_api';
+import {verify_Token} from '../api/auth_apis';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const useFetchUserData = () => {
