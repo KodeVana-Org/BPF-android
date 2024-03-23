@@ -1,33 +1,46 @@
-import {StyleSheet, ScrollView, Text, View} from 'react-native';
+import {StyleSheet, ScrollView, Text, View, RefreshControl} from 'react-native';
 import React, {useEffect, useState} from 'react';
 import NavHeader from '../../components/Header/NavHeader';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {get_users} from '../../api/auth_apis';
 
-export default function EditMemberScreen() {
+export default function EditUsersScreen() {
   // Fetch users
   const [allUsers, setAllUsers] = useState([]);
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await get_users();
-        if (response.data) {
-          setAllUsers(response.data);
-        } else {
-          console.error('Users data not found in response:', response);
-        }
-      } catch (error) {
-        console.error('Error fetching users:', error);
+  const fetchUsers = async () => {
+    try {
+      const response = await get_users();
+      if (response.data) {
+        setAllUsers(response.data);
+      } else {
+        console.error('Users data not found in response:', response);
       }
-    };
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
+  useEffect(() => {
     fetchUsers();
   }, []);
 
+  // Refresh control
+  const [refreshing, setRefreshing] = React.useState(false);
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    fetchUsers();
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  }, []);
+
   return (
-    <ScrollView>
-      <SafeAreaView>
-        <NavHeader title={'Members list'} />
-        <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <NavHeader title={'Members list'} />
+      <ScrollView
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }>
+        <View style={styles.userContainer}>
           {allUsers.map((user, index) => (
             <View key={index} style={styles.listContainer}>
               <View style={styles.dataContainer}>
@@ -36,8 +49,8 @@ export default function EditMemberScreen() {
             </View>
           ))}
         </View>
-      </SafeAreaView>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -46,6 +59,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
   },
+  userContainer: {},
   userProfile: {
     height: 100,
     width: 100,

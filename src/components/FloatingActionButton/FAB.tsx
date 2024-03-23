@@ -74,7 +74,7 @@ const FAB = () => {
         </Pressable>
         <Pressable
           style={styles.buttonContainer}
-          onPress={() => navigation.navigate('EditMember')}>
+          onPress={() => navigation.navigate('EditUsers')}>
           <View style={styles.iconContainer}>
             <Image
               source={require('../../assets/icons/PenIcon.png')}

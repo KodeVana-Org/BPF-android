@@ -19,6 +19,7 @@ import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {DrawerParamList} from '../../navigator/DrawerNavigator';
 import useFetchUserData from '../../data/userData';
+import {RootStackParamList} from '../../navigator/RootNavigator';
 
 const windowHeight = Dimensions.get('window').height;
 
@@ -64,6 +65,7 @@ function CustomDrawer(props: any) {
   }, [userData]);
 
   const {navigation} = props;
+  const navigationJD = useNavigation<StackNavigationProp<RootStackParamList>>();
   return (
     <DrawerContentScrollView
       {...props}
@@ -82,7 +84,7 @@ function CustomDrawer(props: any) {
             />
             <Image
               source={require('../../assets/images/PartyEmblem.png')}
-              style={{height: 80, width: 120, opacity: 50}}
+              style={{height: 80, width: 120, opacity: 50, marginTop: 0}}
             />
             <Text style={styles.userName}>{userName}</Text>
             <Text style={styles.userID}>ID: {userData.userId}</Text>
@@ -106,7 +108,7 @@ function CustomDrawer(props: any) {
           <TouchableOpacity
             style={styles.navItemContainer}
             onPress={() => navigation.navigate('History')}>
-            <Text style={styles.navLinkText}>History</Text>
+            <Text style={styles.navLinkText}>History of BTC</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.navItemContainer}
@@ -116,7 +118,7 @@ function CustomDrawer(props: any) {
           <TouchableOpacity
             style={styles.navItemContainer}
             onPress={() => navigation.navigate('Achievement')}>
-            <Text style={styles.navLinkText}>Achievement</Text>
+            <Text style={styles.navLinkText}>Achievements</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.navItemContainer}
@@ -126,17 +128,22 @@ function CustomDrawer(props: any) {
           <TouchableOpacity
             style={styles.navItemContainer}
             onPress={() => navigation.navigate('SixthShedule')}>
-            <Text style={styles.navLinkText}>6th Shedule</Text>
+            <Text style={styles.navLinkText}>6th Schedule</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.navItemContainer}
             onPress={() => navigation.navigate('Vission')}>
-            <Text style={styles.navLinkText}>Vission</Text>
+            <Text style={styles.navLinkText}>Vision</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.navItemContainer}
             onPress={() => navigation.navigate('Gallery')}>
             <Text style={styles.navLinkText}>Gallery</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.navItemContainer}
+            onPress={() => navigationJD.navigate('Donate')}>
+            <Text style={styles.navLinkText}>Donate us</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.navItemContainer}

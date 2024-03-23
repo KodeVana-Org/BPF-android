@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   BottomTabBarProps,
   createBottomTabNavigator,
@@ -7,9 +7,10 @@ import {
   HomeScreen,
   PostsScreen,
   VideosScreen,
-  ConferenceScreen,
+  ConferenceLobbyScreen,
 } from '../screens';
 import CustomBottomTab from '../components/BottomButton/CustomBottomTab';
+import useFetchUserData from '../data/userData';
 
 export type BottomTabParamList = {
   Home: undefined;
@@ -23,6 +24,23 @@ const CustomBottomTabs = (props: BottomTabBarProps) => {
 };
 
 const BottomTabNavigator = () => {
+  const [partyMember, setPartyMember] = useState(false);
+  const userData = useFetchUserData();
+
+  useEffect(() => {
+    if (Object.keys(userData).length !== 0) {
+      if (
+        userData.userType === 'admin' ||
+        userData.userType === 'superAdmin' ||
+        userData.userType === 'member'
+      ) {
+        setPartyMember(true);
+      } else {
+        setPartyMember(false);
+      }
+    }
+  }, [userData]);
+
   const Tab = createBottomTabNavigator<BottomTabParamList>();
 
   return (
@@ -32,7 +50,9 @@ const BottomTabNavigator = () => {
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Post" component={PostsScreen} />
       <Tab.Screen name="Video" component={VideosScreen} />
-      <Tab.Screen name="Conference" component={ConferenceScreen} />
+      {partyMember ? (
+        <Tab.Screen name="Conference" component={ConferenceLobbyScreen} />
+      ) : null}
     </Tab.Navigator>
   );
 };

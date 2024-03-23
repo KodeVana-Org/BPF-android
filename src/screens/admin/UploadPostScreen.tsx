@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Dimensions,
   TextInput,
+  RefreshControl,
 } from 'react-native';
 import React, {useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -74,24 +75,22 @@ const UploadPostScreen = () => {
         }
       } catch (error) {
         for (let i = 1; i < 3; i++) {
-          const retryResult = await ApiManager.post(
-            'post/create-post',
-            formData,
-            {
-              headers: {
-                'Content-Type': 'multipart/form-data',
+          if (postImageUrl != null) {
+            const retryResult = await ApiManager.post(
+              'post/create-post',
+              formData,
+              {
+                headers: {
+                  'Content-Type': 'multipart/form-data',
+                },
               },
-            },
-          );
-          if (retryResult.status === 200) {
-            console.log('Post uploaded successfully!');
-            setPostImageUrl(null);
-            setImageSelectionMessage('Post uploaded seccessfully!');
-          }
-          console.log('Retry attempt', i);
-          if (retryResult.status === 200) {
-            console.log('Post uploaded successfully on retry!');
-            break;
+            );
+            if (retryResult.status === 200) {
+              console.log('Post uploaded successfully!');
+              setPostImageUrl(null);
+              setImageSelectionMessage('Post uploaded seccessfully!');
+              break;
+            }
           }
         }
       }
@@ -103,13 +102,25 @@ const UploadPostScreen = () => {
     setPostImageUrl(null);
   };
 
+  // Refresh control
+  const [refreshing, setRefreshing] = React.useState(false);
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  }, []);
+
   return (
     <SafeAreaView style={styles.container}>
       <Animated.View style={styles.container}>
         <NavHeader title={'Upload new post'} />
         <ScrollView
           showsVerticalScrollIndicator={false}
-          style={styles.uploadPostContainer}>
+          style={styles.uploadPostContainer}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }>
           <View style={styles.formContainer}>
             <TextInput
               inputMode="text"

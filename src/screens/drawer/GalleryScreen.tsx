@@ -5,8 +5,7 @@ import {SafeAreaProvider} from 'react-native-safe-area-context';
 import Animated from 'react-native-reanimated';
 import GalleryFlatlist from '../../components/GalleryFlatlist/GalleryFlatlist';
 
-const windowWidth = Dimensions.get('window').width;
-// const windowHeight = Dimensions.get('window').height;
+const width = Dimensions.get('window').width;
 
 const GalleryScreen = () => {
   return (
@@ -34,7 +33,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   image: {
-    height: 300,
-    width: windowWidth,
+    height: width,
+    width: width,
   },
 });

@@ -36,7 +36,9 @@ const YouTubeVideoFLatlist = () => {
         Duration: {item.duration} minutes
       </Text>
       <Text style={styles.title}>{item.title}</Text>
-      <Text style={styles.publishDate}>Published in: {item.publishedAt}</Text>
+      <Text style={styles.publishDate}>
+        Published in: {item.publishedAt.substring(0, 10)}
+      </Text>
     </View>
   );
 
@@ -47,6 +49,7 @@ const YouTubeVideoFLatlist = () => {
         renderItem={renderItem}
         keyExtractor={(item, index) => index.toString()}
         showsVerticalScrollIndicator={false}
+        initialNumToRender={3}
       />
     </View>
   );

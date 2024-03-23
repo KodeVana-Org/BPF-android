@@ -9,6 +9,7 @@ import {
   Dimensions,
   TextInput,
   FlatList,
+  RefreshControl,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -71,29 +72,29 @@ const UploadGalleryScreen = () => {
           console.log('Gallery uploaded successfully!');
           setGalleryImageUrl(null);
           setImageSelectionMessage('Gallery uploaded seccessfully!');
+          fetchGallery();
         } else {
           console.log('Gallery not uploaded, please try again!');
         }
       } catch (error) {
         for (let i = 1; i < 3; i++) {
-          const retryResult = await ApiManager.post(
-            'youtube/upload-gallery',
-            formData,
-            {
-              headers: {
-                'Content-Type': 'multipart/form-data',
+          if (galleryImageUrl != null) {
+            const retryResult = await ApiManager.post(
+              'youtube/upload-gallery',
+              formData,
+              {
+                headers: {
+                  'Content-Type': 'multipart/form-data',
+                },
               },
-            },
-          );
-          if (retryResult.status === 200) {
-            console.log('Gallery uploaded successfully!');
-            setGalleryImageUrl(null);
-            setImageSelectionMessage('Gallery uploaded seccessfully!');
-          }
-          console.log('Retry attempt', i);
-          if (retryResult.status === 200) {
-            console.log('Gallery uploaded successfully on retry!');
-            break;
+            );
+            if (retryResult.status === 200) {
+              console.log('Gallery uploaded successfully!');
+              setGalleryImageUrl(null);
+              setImageSelectionMessage('Gallery uploaded seccessfully!');
+              fetchGallery();
+              break;
+            }
           }
         }
       }
@@ -102,20 +103,19 @@ const UploadGalleryScreen = () => {
 
   // Fetch galley images
   const [gallery, setGallery] = useState([]);
-  useEffect(() => {
-    const fetchGallery = async () => {
-      try {
-        const response = await get_gallery();
-        if (response && response.gallery) {
-          setGallery(response.gallery);
-        } else {
-          console.error('Gallery data not found in response:', response);
-        }
-      } catch (error) {
-        console.error('Error fetching gallery:', error);
+  const fetchGallery = async () => {
+    try {
+      const response = await get_gallery();
+      if (response && response.gallery) {
+        setGallery(response.gallery);
+      } else {
+        console.error('Gallery data not found in response:', response);
       }
-    };
-
+    } catch (error) {
+      console.error('Error fetching gallery:', error);
+    }
+  };
+  useEffect(() => {
     fetchGallery();
   }, []);
 
@@ -124,13 +124,26 @@ const UploadGalleryScreen = () => {
     setGalleryImageUrl(null);
   };
 
+  // Refresh control
+  const [refreshing, setRefreshing] = React.useState(false);
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    fetchGallery();
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  }, []);
+
   return (
     <SafeAreaView style={styles.container}>
       <Animated.View style={styles.container}>
         <NavHeader title={'Upload gallery'} />
         <ScrollView
           showsVerticalScrollIndicator={false}
-          style={styles.uploadPostContainer}>
+          style={styles.uploadPostContainer}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }>
           <View style={styles.formContainer}>
             <TextInput
               inputMode="text"

@@ -8,6 +8,7 @@ import {
   FlatList,
   Dimensions,
   Animated,
+  RefreshControl,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import NavHeader from '../../components/Header/NavHeader';
@@ -60,26 +61,30 @@ export default function EditBannerScreen() {
         setPostImageUrl(null);
         setShowUploadDialog(false);
         setUploadBannerMessage('Banner uploaded successfully!');
+        fetchBanners();
       } else {
         console.log('Banner not uploaded, please try again!');
       }
     } catch (error) {
       for (let i = 1; i < 3; i++) {
-        const retryResult = await ApiManager.post('api/upload-hero', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
-        if (retryResult.status === 200) {
-          console.log('Banner uploaded successfully!');
-          setPostImageUrl(null);
-          setShowUploadDialog(false);
-          setUploadBannerMessage('Banner uploaded successfully!');
-        }
-        console.log('Retry attempt', i);
-        if (retryResult.status === 200) {
-          console.log('Banner uploaded successfully on retry!');
-          break;
+        if (postImageUrl != null) {
+          const retryResult = await ApiManager.post(
+            'api/upload-hero',
+            formData,
+            {
+              headers: {
+                'Content-Type': 'multipart/form-data',
+              },
+            },
+          );
+          if (retryResult.status === 200) {
+            console.log('Banner uploaded successfully!');
+            setPostImageUrl(null);
+            setShowUploadDialog(false);
+            setUploadBannerMessage('Banner uploaded successfully!');
+            fetchBanners();
+            break;
+          }
         }
       }
     }
@@ -87,21 +92,30 @@ export default function EditBannerScreen() {
 
   // fetch banner
   const [getBanners, setGetBanners] = useState([]);
-  useEffect(() => {
-    const fetchBanners = async () => {
-      try {
-        const response = await get_banners();
-        if (response.data) {
-          setGetBanners(response.data.image.reverse());
-        } else {
-          console.error('Banners data not found in response:', response);
-        }
-      } catch (error) {
-        console.error('Error fetching banners:', error);
+  const fetchBanners = async () => {
+    try {
+      const response = await get_banners();
+      if (response.data) {
+        setGetBanners(response.data.image.reverse());
+      } else {
+        console.error('Banners data not found in response:', response);
       }
-    };
-
+    } catch (error) {
+      console.error('Error fetching banners:', error);
+    }
+  };
+  useEffect(() => {
     fetchBanners();
+  }, []);
+
+  // Refresh control
+  const [refreshing, setRefreshing] = React.useState(false);
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    fetchBanners();
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
   }, []);
 
   return (
@@ -111,7 +125,10 @@ export default function EditBannerScreen() {
         {/* Body container */}
         <ScrollView
           showsVerticalScrollIndicator={false}
-          style={styles.editBannerContainer}>
+          style={styles.editBannerContainer}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }>
           {/* Upload banner form */}
           {showUploadDialog ? (
             <View style={styles.formContainer}>

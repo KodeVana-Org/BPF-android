@@ -57,6 +57,7 @@ const PostFlatList = ({
         showsVerticalScrollIndicator={false}
         keyExtractor={(item, index) => index.toString()}
         contentContainerStyle={{paddingRight: horizontal ? 16 : 0}}
+        initialNumToRender={3}
         renderItem={({item}) => (
           <View style={[styles.postContainer, calculateMargin()]}>
             <Image source={{uri: item.postImages}} style={styles.image} />
@@ -76,19 +77,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   postContainer: {
-    paddingHorizontal: 10,
-    paddingVertical: 20,
+    paddingHorizontal: 15,
+    paddingVertical: 15,
     flex: 1,
     gap: 10,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 10,
     borderWidth: 0.2,
-    width: width - 40,
+    width: width - 20,
   },
   image: {
-    width: '100%',
-    height: 300,
+    width: width - 40,
+    height: width - 40,
     borderRadius: 7,
   },
   text: {

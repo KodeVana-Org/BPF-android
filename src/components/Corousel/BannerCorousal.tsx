@@ -35,18 +35,16 @@ function BannerCarousal() {
       <Carousel
         loop
         width={width}
-        height={width + 20}
+        height={width}
         autoPlay={true}
-        data={bannerImages} // Use bannerImages directly
+        data={bannerImages}
         scrollAnimationDuration={1000}
         onSnapToItem={handleSnapToItem}
-        renderItem={(
-          {item}, // Use item directly
-        ) => (
+        renderItem={({item}) => (
           <View style={{flex: 1}}>
             <Image
-              source={{uri: item.ImageUrl}} // Use item.ImageUrl
-              style={{width: width, height: width + 20, resizeMode: 'contain'}}
+              source={{uri: item.ImageUrl}}
+              style={{width: width, height: width, resizeMode: 'contain'}}
             />
           </View>
         )}

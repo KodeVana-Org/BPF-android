@@ -8,7 +8,7 @@ import {
   SplashScreen,
   NotificationScreen,
   EditBannerScreen,
-  EditMemberScreen,
+  EditUsersScreen,
   UploadPostScreen,
   UploadGalleryScreen,
   ConferenceStreamScreen,
@@ -22,7 +22,7 @@ export type RootStackParamList = {
   Join: undefined;
   Donate: undefined;
   Notification: undefined;
-  EditMember: undefined;
+  EditUsers: undefined;
   EditBanner: undefined;
   UploadPost: undefined;
   UploadGallery: undefined;
@@ -63,7 +63,7 @@ const RootNavigator = () => {
       )}
       <Stack.Screen name="Notification" component={NotificationScreen} />
       <Stack.Screen name="EditBanner" component={EditBannerScreen} />
-      <Stack.Screen name="EditMember" component={EditMemberScreen} />
+      <Stack.Screen name="EditUsers" component={EditUsersScreen} />
       <Stack.Screen name="UploadPost" component={UploadPostScreen} />
       <Stack.Screen name="UploadGallery" component={UploadGalleryScreen} />
       <Stack.Screen

@@ -1,34 +1,41 @@
-import React, {useState} from 'react';
-import {
-  // ScrollView,
-  StyleSheet,
-  // Text,
-  // TouchableOpacity,
-  // View,
-} from 'react-native';
-// import NavHeader from '../../components/Header/NavHeader';
+import React from 'react';
+import {StyleSheet} from 'react-native';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
-import AgoraUIKit from 'react-native-agora';
-import {PropsInterface} from 'react-native-agora';
+import AgoraUIKit from 'agora-rn-uikit';
+import {useNavigation} from '@react-navigation/native';
 
 const ConferenceStreamScreen = ({route}: any) => {
+  const navigation = useNavigation();
   // Agora props data
   const APP_ID = 'd6fea84d1a2644779f993113db640989';
-  const STREAM_TOKEN = '007eJxTYPh6YqVT1hbTrohLW9xmBSQq3gqfknt+oUyPYdM3i6s1gkEKDClmaamJFiYpholGZiYm5uaWaZaWxoaGxilJZiYGlhaWN5t/pjYEMjI89w1iZGSAQBCflaEktbjEkIEBAKSBIF0=';
-  const CHANNEL_NAME = 'test1';
+  const STREAM_TOKEN =
+    '007eJxTYGjY/2te2xzjW8Wx5wXKZr/WM86cNLWg8tcqsSUXXX886WNQYEgxS0tNtDBJMUw0MjMxMTe3TLO0NDY0NE5JMjMxsLSwnLjvX6oAHwPDlCuVDIxAyALEID4TmGQGkyxQsiS1uISLwcjCwsjYxNDI3BgAYqkjAg==';
+  const CHANNEL_NAME = route.params.roomName;
+  console.log('Channel name', CHANNEL_NAME);
+  // TODO: invalid data props
+  const USERNAME = 'username';
+  const UID = 123;
 
-  const {roomId} = route.params.data;
-  const [videoCall, setVideoCall] = useState(true);
-  const props: PropsInterface = {
-    rtcProps: {appId: APP_ID, channel: CHANNEL_NAME},
-    callBacks: {endCall: () => setVideoCall(false)},
+  const connectionData = {
+    appId: APP_ID,
+    channel: CHANNEL_NAME,
+    token: STREAM_TOKEN,
+    // username: USERNAME,
+    uid: UID,
   };
 
-  return videoCall ? (
+  const callbacks = {
+    ActiveSpeaker: () => {},
+    EndCall: () => {
+      navigation.goBack();
+    },
+  };
+
+  return (
     <SafeAreaProvider style={styles.container}>
-      <AgoraUIKit rtcProps={props.rtcProps} callBacks={props.callBacks} />
+      <AgoraUIKit connectionData={connectionData} rtcCallbacks={callbacks} />
     </SafeAreaProvider>
-  ) : null;
+  );
 };
 
 export default ConferenceStreamScreen;
@@ -38,38 +45,5 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white',
     position: 'relative',
-  },
-  streamWrapper: {
-    flex: 1,
-  },
-  videoStreams: {
-    // TODO Add styles for camera views
-  },
-  streamControls: {
-    gap: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'absolute',
-    bottom: 20,
-    left: 0,
-    right: 0,
-  },
-  button: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 10,
-  },
-  leaveButton: {
-    backgroundColor: '#FF671F',
-  },
-  micButton: {
-    backgroundColor: '#046A38',
-  },
-  cameraButton: {
-    backgroundColor: '#046A38',
-  },
-  buttonText: {
-    color: '#FFF',
   },
 });

@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Text,
   Dimensions,
+  RefreshControl,
 } from 'react-native';
 import Animated from 'react-native-reanimated';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
@@ -47,10 +48,23 @@ const HomeScreen = ({navigation}: any) => {
     }
   }, [userData]);
 
+  // Refresh control
+  const [refreshing, setRefreshing] = React.useState(false);
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  }, []);
+
   return (
     <SafeAreaProvider>
       <Header title="Bodoland Peoples' Front" drawerNavigation={navigation} />
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }>
         <GestureHandlerRootView style={{flex: 1}}>
           {/* If you're not using react-native-bars, you can remove SystemBars */}
           <SystemBars animated={true} barStyle={'light-content'} />
