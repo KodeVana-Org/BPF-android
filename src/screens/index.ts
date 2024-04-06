@@ -26,12 +26,16 @@ export {default as AboutScreen} from './drawer/AboutScreen';
 ////////////////////** OUTER SCREENS **////////////////////
 export {default as SplashScreen} from './SplashScreen';
 export {default as NotificationScreen} from './NotificationScreen';
+export {default as DonateScreen} from './DonateScreen';
+export {default as JoinScreen} from './JoinScreen';
 
-////////////////////** OUTER SCREENS **////////////////////
+////////////////////** ADMIN ACCESS SCREENS **////////////////////
 export {default as EditBannerScreen} from './admin/EditBannerScreen';
 export {default as EditUsersScreen} from './admin/EditUsersScreen';
 export {default as UploadPostScreen} from './admin/UploadPostScreen';
 export {default as UploadGalleryScreen} from './admin/UploadGalleryScreen';
+export {default as EditUserDataScreen} from './admin/EditUserDataScreen';
 
-////////////////////** OUTER SCREENS **////////////////////
+////////////////////** MODEL SCREENS **////////////////////
 export {default as ConferenceStreamScreen} from './models/ConferenceStreamScreen';
+export {default as ViewPostScreen} from './models/ViewPostScreen';

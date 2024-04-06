@@ -67,19 +67,21 @@ const LoginOtpScreen = () => {
       const result = await user_login_otp({
         emailPhone: emailPhone.toLocaleLowerCase(),
       });
-      if (result.data) {
+      if (result.status === 200) {
         navigation.navigate('VerifyOTP', {
           EmailPhone: emailPhone,
           Password: '',
           Purpose: 'login',
         } as any);
-      } else if (result.status !== 200) {
-        emailPhoneErrorMessageType('Invalid input details!');
+      } else if (result.status === 404) {
+        emailPhoneErrorMessageType('Wrong input details!');
+        setEmailPhoneErrorMessageVisible(true);
+      } else if (result.status === 500) {
+        emailPhoneErrorMessageType('Please try again!');
         setEmailPhoneErrorMessageVisible(true);
       }
     } catch (error) {
       console.error('Error logging user:', error);
-      console.error(error);
     }
   };
 
@@ -223,7 +225,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 30,
     borderRadius: 15,
-    opacity: 50,
     ...(Platform.OS === 'ios'
       ? {
           shadowColor: '#000',

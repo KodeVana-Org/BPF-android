@@ -99,13 +99,13 @@ const RegisterScreen = () => {
       const result = await user_register({
         emailPhone: emailPhone.toLocaleLowerCase(),
       });
-      if (result.data) {
+      if (result.status === 200) {
         navigation.navigate('VerifyOTP', {
           EmailPhone: emailPhone,
           Password: password,
           Purpose: 'register',
         } as any);
-      } else if (result.status !== 200) {
+      } else if (result.status === 403) {
         emailPhoneErrorMessageType('User already exist!');
         setEmailPhoneErrorMessageVisible(true);
       }
@@ -273,7 +273,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 30,
     borderRadius: 15,
-    opacity: 50,
     ...(Platform.OS === 'ios'
       ? {
           shadowColor: '#000',

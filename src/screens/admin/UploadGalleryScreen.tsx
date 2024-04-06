@@ -37,7 +37,7 @@ const UploadGalleryScreen = () => {
   const openImagePicker = () => {
     ImagePicker.openPicker({
       width: 300,
-      height: 400,
+      height: 300,
       cropping: true,
     }).then(image => {
       setGalleryImageUrl(image.path);
@@ -302,12 +302,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 10,
     borderWidth: 0.2,
-    width: Dimensions.get('window').width - 40,
+    width: Dimensions.get('window').width - 20,
     marginTop: 30,
   },
   image: {
+    height: Dimensions.get('window').width - 40,
     width: Dimensions.get('window').width - 40,
-    height: 300,
     borderRadius: 7,
   },
   text: {

@@ -6,8 +6,12 @@ import {
   Image,
   StyleSheet,
   Dimensions,
+  Pressable,
 } from 'react-native';
 import {get_posts} from '../../api/app_data_apis';
+import {useNavigation} from '@react-navigation/native';
+import {ModelsParamList} from '../../navigator/ModelNavigator';
+import {StackNavigationProp} from '@react-navigation/stack';
 
 const {width} = Dimensions.get('window');
 
@@ -19,6 +23,8 @@ const PostFlatList = ({
   marginType?: 'bottom' | 'right';
 }) => {
   const [posts, setPosts] = useState([]);
+  const navigation = useNavigation<StackNavigationProp<ModelsParamList>>();
+  // console.log(navigation);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -59,10 +65,12 @@ const PostFlatList = ({
         contentContainerStyle={{paddingRight: horizontal ? 16 : 0}}
         initialNumToRender={3}
         renderItem={({item}) => (
-          <View style={[styles.postContainer, calculateMargin()]}>
+          <Pressable
+            style={[styles.postContainer, calculateMargin()]}
+            onPress={() => navigation.navigate('ViewPost', {postId: item.id})}>
             <Image source={{uri: item.postImages}} style={styles.image} />
             <Text style={styles.text}>{item.postComment}</Text>
-          </View>
+          </Pressable>
         )}
       />
     </View>

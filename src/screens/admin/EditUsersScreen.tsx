@@ -1,11 +1,26 @@
-import {StyleSheet, ScrollView, Text, View, RefreshControl} from 'react-native';
 import React, {useEffect, useState} from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  RefreshControl,
+  TouchableOpacity,
+  Dimensions,
+  FlatList,
+} from 'react-native';
 import NavHeader from '../../components/Header/NavHeader';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {get_users} from '../../api/auth_apis';
+import {useNavigation} from '@react-navigation/native';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {AdminParamList} from '../../navigator/AdminNavigator';
+import {TextInput} from 'react-native-gesture-handler';
 
 export default function EditUsersScreen() {
-  // Fetch users
+  const navigation = useNavigation<StackNavigationProp<AdminParamList>>();
+  const [searchQuery, setSearchQuery] = useState();
+
+  // Fetch user data
   const [allUsers, setAllUsers] = useState([]);
   const fetchUsers = async () => {
     try {
@@ -23,6 +38,26 @@ export default function EditUsersScreen() {
     fetchUsers();
   }, []);
 
+  // Set user type
+  const getUserType = (text: string) => {
+    switch (text) {
+      case 'superAdmin':
+        return 'Super admin';
+      case 'admin':
+        return 'Admin';
+      case 'post-admin':
+        return 'Post admin';
+      case 'member':
+        return 'Member';
+      case 'joined':
+        return 'Joined';
+      case 'user':
+        return 'User';
+      default:
+        return 'User';
+    }
+  };
+
   // Refresh control
   const [refreshing, setRefreshing] = React.useState(false);
   const onRefresh = React.useCallback(() => {
@@ -33,23 +68,55 @@ export default function EditUsersScreen() {
     }, 2000);
   }, []);
 
+  // Handle search
+  const handleSearch = (query: string) => {
+    console.log(query); // TODO remove
+  };
+
+  // Handle user click
+  const handleUserClick = (userId: string) => {
+    navigation.navigate('EditUserData', {userId: userId});
+  };
+
+  const renderUserItem = ({item}) => (
+    <TouchableOpacity
+      onPress={() => {
+        handleUserClick(item._id);
+      }}
+      style={styles.dataContainer}>
+      <View style={styles.idWrapper}>
+        <Text style={styles.UserLebel}>ID: </Text>
+        <Text style={styles.userId}>{item.userID}</Text>
+        <Text style={styles.UserLebel}> | </Text>
+        <Text style={styles.UserLebel}>{getUserType(item.userType)}</Text>
+      </View>
+      <Text style={styles.userName}>
+        {item.name || item.email || item.phone}
+      </Text>
+    </TouchableOpacity>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <NavHeader title={'Members list'} />
-      <ScrollView
+      <TextInput
+        placeholder="Search"
+        placeholderTextColor={'gray'}
+        style={styles.searchBar}
+        clearButtonMode="always"
+        autoCorrect={false}
+        value={searchQuery}
+        onChangeText={query => handleSearch(query)}
+      />
+      <FlatList
+        data={allUsers}
+        renderItem={renderUserItem}
+        keyExtractor={item => item._id}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }>
-        <View style={styles.userContainer}>
-          {allUsers.map((user, index) => (
-            <View key={index} style={styles.listContainer}>
-              <View style={styles.dataContainer}>
-                <Text style={styles.userName}>{user.email}</Text>
-              </View>
-            </View>
-          ))}
-        </View>
-      </ScrollView>
+        }
+        contentContainerStyle={styles.listContainer}
+      />
     </SafeAreaView>
   );
 }
@@ -57,32 +124,45 @@ export default function EditUsersScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
   },
-  userContainer: {},
-  userProfile: {
-    height: 100,
-    width: 100,
-    borderRadius: 30,
+  searchBar: {
+    borderWidth: 0.4,
+    width: Dimensions.get('window').width - 40,
+    alignSelf: 'center',
+    color: 'gray',
+    fontSize: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    marginTop: 10,
+    marginBottom: 7,
+    borderRadius: 7,
   },
   listContainer: {
-    gap: 10,
-    flex: 1,
-    justifyContent: 'center',
-    paddingTop: 20,
-    paddingHorizontal: 40,
+    paddingTop: 5,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
   },
   dataContainer: {
-    flex: 1,
+    marginBottom: 10,
+    backgroundColor: '#e0e0e0',
+    paddingVertical: 5,
+    paddingHorizontal: 8,
+    borderRadius: 7,
+  },
+  idWrapper: {
     flexDirection: 'row',
   },
-  dataLabel: {
-    fontWeight: '500',
-    fontSize: 18,
+  UserLebel: {
+    fontSize: 17,
     color: '#000',
+  },
+  userId: {
+    fontSize: 16,
+    color: 'blue',
   },
   userName: {
     fontSize: 18,
+    fontWeight: '500',
     color: '#000',
   },
 });

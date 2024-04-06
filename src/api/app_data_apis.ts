@@ -11,7 +11,22 @@ export const get_posts = async (): Promise<any> => {
   }
 };
 
-/////////////////** GET ALL POSTS **//////////////////
+/////////////////** GET SINGLE POST **//////////////////
+interface GetSinglePost {
+  postId: any;
+}
+
+export const get_single_post = async (data: GetSinglePost): Promise<any> => {
+  try {
+    const response = await ApiManager.get(`post/get-post/${data.postId}`);
+    return response.data;
+  } catch (error: any) {
+    console.log('Error accessing single post:', error.message);
+    return error.response.data;
+  }
+};
+
+/////////////////** GET ALL GALLERY **//////////////////
 export const get_gallery = async (): Promise<any> => {
   try {
     const response = await ApiManager.get('youtube/get-gallery');
@@ -33,7 +48,7 @@ export const get_achievements = async (): Promise<any> => {
   }
 };
 
-/////////////////** GET ALL ACHIEVEMENT **//////////////////
+/////////////////** GET ALL BANNERS **//////////////////
 export const get_banners = async (): Promise<any> => {
   try {
     const response = await ApiManager.get('api/all-hero');

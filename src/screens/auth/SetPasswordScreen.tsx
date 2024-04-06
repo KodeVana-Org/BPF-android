@@ -33,8 +33,16 @@ const windowHeight = Dimensions.get('window').height;
 const RegisterScreen = ({route}: Props) => {
   // Handle hide password
   const [hidePassword, setHidePassword] = useState(true);
+  const [hideConfirmPassword, setHideConfirmPassword] = useState(true);
+
+  // Handle hide password
   const toggleHidePassword = () => {
     setHidePassword(!hidePassword);
+  };
+
+  // Handle hide confirm-password
+  const toggleHideConfirmPassword = () => {
+    setHideConfirmPassword(!hideConfirmPassword);
   };
 
   /// Handle navigation to HomeScreen
@@ -68,29 +76,28 @@ const RegisterScreen = ({route}: Props) => {
 
   // Handle form data validation
   const handleSaveButton = async () => {
+    setPasswordErrorMessageVisible(false);
+    setConfirmPasswordErrorMessageVisible(false);
     const passwordValidationResult = validatePassword(password);
     const confirmPasswordValidationResult = validatePassword(confirmPassword);
     if (
       passwordValidationResult?.success &&
       confirmPasswordValidationResult?.success
     ) {
-      passUserData();
-    }
-    // Display password error message
-    if (!passwordValidationResult?.success) {
+      // Match password & confirm-password
+      if (password === confirmPassword) {
+        passUserData();
+      } else {
+        setErrorMessage("Password doesn't match!");
+        setPasswordErrorMessageVisible(true);
+        setConfirmPasswordErrorMessageVisible(true);
+      }
+    } else if (!passwordValidationResult?.success) {
       errorMessageType(passwordValidationResult?.message || '');
       setPasswordErrorMessageVisible(true);
-    } else {
-      errorMessageType(passwordValidationResult?.message || '');
-      setPasswordErrorMessageVisible(false);
-    }
-    // Display confirm password error message
-    if (!passwordValidationResult?.success) {
-      errorMessageType(passwordValidationResult?.message || '');
+    } else if (!confirmPasswordValidationResult?.success) {
+      errorMessageType(confirmPasswordValidationResult?.message || '');
       setConfirmPasswordErrorMessageVisible(true);
-    } else {
-      errorMessageType(passwordValidationResult?.message || '');
-      setConfirmPasswordErrorMessageVisible(false);
     }
   };
 
@@ -101,11 +108,11 @@ const RegisterScreen = ({route}: Props) => {
         emailPhone: emailPhone.toLocaleLowerCase(),
         password: password,
       });
-      if (result.data) {
+      if (result.status === 200) {
         handleNavigateToHome();
         storeToken(result.data.token);
-      } else if (result.status !== 200) {
-        errorMessageType('Invalid input details!');
+      } else {
+        errorMessageType('Please try again!');
         setPasswordErrorMessageVisible(true);
       }
     } catch (error) {
@@ -145,7 +152,7 @@ const RegisterScreen = ({route}: Props) => {
           <View style={[styles.flagSection, styles.flagGreen]} />
           <Text style={styles.flagLebel}>Bodoland People's Front</Text>
         </View>
-        <Text style={styles.formHeader}>New Register</Text>
+        <Text style={styles.formHeader}>Set new password</Text>
         <View style={styles.formContainer}>
           <View style={styles.inputFieldContainer}>
             <Text style={styles.inputFieldLebel}>Password*</Text>
@@ -176,13 +183,13 @@ const RegisterScreen = ({route}: Props) => {
               <TextInput
                 onChangeText={handleConfirmPasswordInputChange}
                 value={confirmPassword}
-                secureTextEntry={hidePassword ? true : false}
+                secureTextEntry={hideConfirmPassword ? true : false}
                 style={[styles.inputField, styles.passwordInputField]}
               />
               <Pressable
                 style={styles.hidePassBtn}
-                onPress={toggleHidePassword}>
-                {hidePassword ? (
+                onPress={toggleHideConfirmPassword}>
+                {hideConfirmPassword ? (
                   <EyeClose height={20} width={20} />
                 ) : (
                   <EyeOpen height={20} width={20} />
@@ -272,7 +279,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 30,
     borderRadius: 15,
-    opacity: 50,
     ...(Platform.OS === 'ios'
       ? {
           shadowColor: '#000',

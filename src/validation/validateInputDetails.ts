@@ -66,7 +66,7 @@ export function validatePassword(password: string) {
   return result;
 }
 
-/////////////////////** VALIDATE PASSWORD **////////////////////////
+/////////////////////** VALIDATE OTP **////////////////////////
 
 export function validateOTP(otp: string) {
   let result = {

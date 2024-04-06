@@ -74,12 +74,12 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.kodevana.bpfparty"
+    namespace "com.kodevana.bpfconnect"
     defaultConfig {
-        applicationId "com.kodevana.bpfparty"
+        applicationId "com.kodevana.bpfconnect"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 10
+        versionCode 22
         versionName "0.1.0"
         vectorDrawables.useSupportLibrary = true
     }

@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React from 'react';
 import {
   StyleSheet,
   ScrollView,
@@ -25,28 +25,14 @@ import useFetchUserData from '../../data/userData';
 import FAB from '../../components/FloatingActionButton/FAB';
 import FAB_Poster from '../../components/FloatingActionButton/FAB_Poster';
 import LinearGradient from 'react-native-linear-gradient';
+import JoinDonate from '../../components/Join_Donate/JoinDonate';
 
 const HomeScreen = ({navigation}: any) => {
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isPostAdmin, setIsPostAdmin] = useState(false);
   const bottomNavigation =
     useNavigation<StackNavigationProp<BottomTabParamList>>();
   const drawerNavigation =
     useNavigation<StackNavigationProp<DrawerParamList>>();
-  const userData = useFetchUserData();
-
-  useEffect(() => {
-    if (Object.keys(userData).length !== 0) {
-      if (userData.userType === 'admin' || userData.userType === 'superAdmin') {
-        setIsAdmin(true);
-      } else if (userData.userType === 'post-admin') {
-        setIsPostAdmin(true);
-      } else {
-        setIsPostAdmin(false);
-        setIsAdmin(false);
-      }
-    }
-  }, [userData]);
+  const {admin, postAdmin} = useFetchUserData();
 
   // Refresh control
   const [refreshing, setRefreshing] = React.useState(false);
@@ -71,6 +57,8 @@ const HomeScreen = ({navigation}: any) => {
           <Animated.View style={[styles.container]}>
             {/* Banner carousal */}
             <BannerCarousal />
+            {/* Join Donate */}
+            <JoinDonate />
             {/* PostList */}
             <View style={styles.postListContainer}>
               <View style={styles.headerNav}>
@@ -128,7 +116,7 @@ const HomeScreen = ({navigation}: any) => {
           </Animated.View>
         </GestureHandlerRootView>
       </ScrollView>
-      {isAdmin ? <FAB /> : isPostAdmin ? <FAB_Poster /> : null}
+      {admin ? <FAB /> : postAdmin ? <FAB_Poster /> : null}
     </SafeAreaProvider>
   );
 };
@@ -143,12 +131,12 @@ const styles = StyleSheet.create({
   },
   postListContainer: {
     flex: 1,
-    marginHorizontal: 20,
+    paddingHorizontal: 20,
     marginTop: 20,
   },
   galleryListContainer: {
     flex: 1,
-    marginHorizontal: 20,
+    paddingHorizontal: 20,
     marginTop: 30,
   },
   headerNav: {

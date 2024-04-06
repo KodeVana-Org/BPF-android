@@ -101,18 +101,23 @@ const LoginPassScreen = () => {
         emailPhone: emailPhone.toLocaleLowerCase(),
         password: password,
       });
-      if (result.data.token) {
+      if (result.status === 200) {
         handleNavigateToHome();
         storeToken(result.data.token);
-      } else if (result.status !== 200) {
-        emailPhoneErrorMessageType('Invalid input details!');
-        passwordErrorMessageType('Invalid input details!');
+      } else if (result.status === 404) {
+        emailPhoneErrorMessageType('Wrong input details!');
         setEmailPhoneErrorMessageVisible(true);
+      } else if (result.status === 401) {
+        passwordErrorMessageType('Wrong password!');
         setPasswordErrorMessageVisible(true);
+      } else if (result) {
       }
     } catch (error) {
+      emailPhoneErrorMessageType('Please try again!');
+      passwordErrorMessageType('Please try again!');
+      setEmailPhoneErrorMessageVisible(true);
+      setPasswordErrorMessageVisible(true);
       console.log('Error logging user:', error);
-      console.log(error);
     }
   };
 
@@ -297,7 +302,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 30,
     borderRadius: 15,
-    opacity: 50,
     ...(Platform.OS === 'ios'
       ? {
           shadowColor: '#000',

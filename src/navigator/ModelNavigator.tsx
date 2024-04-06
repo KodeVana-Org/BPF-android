@@ -1,9 +1,10 @@
 import React from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
-import {ConferenceStreamScreen} from '../screens';
+import {ConferenceStreamScreen, ViewPostScreen} from '../screens';
 
 export type ModelsParamList = {
   ConferenceStream: undefined;
+  ViewPost: undefined;
 };
 
 export default function ModelNavigator() {
@@ -15,6 +16,7 @@ export default function ModelNavigator() {
         name="ConferenceStream"
         component={ConferenceStreamScreen}
       />
+      <Stack.Screen name="ViewPost" component={ViewPostScreen} />
     </Stack.Navigator>
   );
 }

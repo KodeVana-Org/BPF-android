@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "BPF.app"
-               BlueprintName = "BPF"
-               ReferencedContainer = "container:BPF.xcodeproj">
+               BuildableName = "BPFConnect.app"
+               BlueprintName = "BPFConnect"
+               ReferencedContainer = "container:BPFConnect.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "BPFTests.xctest"
-               BlueprintName = "BPFTests"
-               ReferencedContainer = "container:BPF.xcodeproj">
+               BuildableName = "BPFConnectTests.xctest"
+               BlueprintName = "BPFConnectTests"
+               ReferencedContainer = "container:BPFConnect.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,9 +55,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "BPF.app"
-            BlueprintName = "BPF"
-            ReferencedContainer = "container:BPF.xcodeproj">
+            BuildableName = "BPFConnect.app"
+            BlueprintName = "BPFConnect"
+            ReferencedContainer = "container:BPFConnect.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "BPF.app"
-            BlueprintName = "BPF"
-            ReferencedContainer = "container:BPF.xcodeproj">
+            BuildableName = "BPFConnect.app"
+            BlueprintName = "BPFConnect"
+            ReferencedContainer = "container:BPFConnect.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

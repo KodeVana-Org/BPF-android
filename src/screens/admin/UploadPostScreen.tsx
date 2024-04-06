@@ -38,7 +38,7 @@ const UploadPostScreen = () => {
   const openImagePicker = () => {
     ImagePicker.openPicker({
       width: 300,
-      height: 400,
+      height: 300,
       cropping: true,
     }).then(image => {
       setPostImageUrl(image.path);

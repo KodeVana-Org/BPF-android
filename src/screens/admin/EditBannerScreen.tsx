@@ -27,7 +27,7 @@ export default function EditBannerScreen() {
   const openImagePicker = () => {
     ImagePicker.openPicker({
       width: 300,
-      height: 400,
+      height: 300,
       cropping: true,
     }).then(image => {
       setPostImageUrl(image.path);
@@ -272,11 +272,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 10,
     borderWidth: 0.2,
-    width: Dimensions.get('window').width - 40,
+    width: Dimensions.get('window').width - 20,
   },
   bannerImage: {
-    height: 350,
-    width: '100%',
+    height: Dimensions.get('window').width - 40,
+    width: Dimensions.get('window').width - 40,
     borderRadius: 10,
   },
   titleContainer: {

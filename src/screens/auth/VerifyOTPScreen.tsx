@@ -118,13 +118,16 @@ const VerifyOTPScreen = ({route}: Props) => {
         emailPhone: emailPhone.toLocaleLowerCase(),
         otp: otp,
       });
-      if (result.data) {
+      if (result.status === 200) {
         otpErrorMessageType('OTP verified successfully');
-        storeToken(result.data.token);
+        storeToken(result.token);
         handleNavigateToHome();
         return true;
-      } else if (result.status !== 200) {
-        otpErrorMessageType('Invalid OTP!');
+      } else if (result.status === 404) {
+        otpErrorMessageType('Wrong OTP!');
+        setOtpErrorMessageVisible(true);
+      } else if (result.status === 400) {
+        otpErrorMessageType('OTP expired!');
         setOtpErrorMessageVisible(true);
       }
     } catch (error) {
@@ -141,14 +144,17 @@ const VerifyOTPScreen = ({route}: Props) => {
         emailPhone: emailPhone.toLocaleLowerCase(),
         otp: otp,
       });
-      if (result.data) {
+      if (result.status === 200) {
         otpErrorMessageType('OTP verified successfully');
         navigation.navigate('SetPass', {
           EmailPhone: emailPhone,
         } as any);
         return true;
-      } else if (result.status !== 200) {
-        otpErrorMessageType('Invalid OTP!');
+      } else if (result.status === 404) {
+        otpErrorMessageType('Wrong OTP!');
+        setOtpErrorMessageVisible(true);
+      } else if (result.status === 400) {
+        otpErrorMessageType('OTP expired!');
         setOtpErrorMessageVisible(true);
       }
     } catch (error) {
@@ -328,7 +334,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 40,
     borderRadius: 15,
-    opacity: 50,
     ...(Platform.OS === 'ios'
       ? {
           shadowColor: '#000',

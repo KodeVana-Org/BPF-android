@@ -67,13 +67,13 @@ const ForgotPasswordScreen = () => {
       const result = await user_forgot_pass({
         emailPhone: emailPhone.toLocaleLowerCase(),
       });
-      if (result.data) {
+      if (result.status === 200) {
         navigation.navigate('VerifyOTP', {
           EmailPhone: emailPhone,
           Password: '',
           Purpose: 'resetPassword',
         } as any);
-      } else if (result.status !== 200) {
+      } else if (result.status === 404) {
         emailPhoneErrorMessageType('Invalid details!');
         setEmailPhoneErrorMessageVisible(true);
       }
@@ -115,12 +115,12 @@ const ForgotPasswordScreen = () => {
               value={emailPhone}
               style={styles.inputField}
             />
+            {emailPhoneErrorMessageVisible ? (
+              <Text style={{color: 'red', marginTop: 5}}>
+                {emailPhoneErrorMessage}
+              </Text>
+            ) : null}
           </View>
-          {emailPhoneErrorMessageVisible ? (
-            <Text style={{color: 'red', marginTop: 5}}>
-              {emailPhoneErrorMessage}
-            </Text>
-          ) : null}
           <View style={styles.sendOTPContainer}>
             <TouchableOpacity
               style={styles.sendOTP}
@@ -223,7 +223,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 30,
     borderRadius: 15,
-    opacity: 50,
     ...(Platform.OS === 'ios'
       ? {
           shadowColor: '#000',
