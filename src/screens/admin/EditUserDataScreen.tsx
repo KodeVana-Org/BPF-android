@@ -20,6 +20,7 @@ import ImagePicker from 'react-native-image-crop-picker';
 import {update_user} from '../../api/update_app_data_apis';
 import {RefreshControl} from 'react-native-gesture-handler';
 import {RadioGroup} from 'react-native-radio-buttons-group';
+import Toast from 'react-native-toast-message';
 
 const EditUserDataScreen = ({route}: any) => {
   const {superAdmin, admin, myId, myServerId} = useFetchUserData();
@@ -235,6 +236,7 @@ const EditUserDataScreen = ({route}: any) => {
         editTime: Date(),
       });
       if (response.status === 200) {
+        showToast();
         setEditing(false);
         setEdited(false);
         console.log('User updated successfully');
@@ -366,6 +368,14 @@ const EditUserDataScreen = ({route}: any) => {
       setRefreshing(false);
     }, 2000);
   }, []);
+
+  // Toast
+  const showToast = () => {
+    Toast.show({
+      type: 'success',
+      text1: 'User updated successfully',
+    });
+  };
 
   return (
     <SafeAreaView style={styles.container}>

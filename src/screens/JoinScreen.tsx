@@ -15,6 +15,7 @@ import {RadioGroup} from 'react-native-radio-buttons-group';
 import {join_bpf} from '../api/join-donate_apis';
 import useFetchUserData from '../data/userData';
 import SelectDropdown from 'react-native-select-dropdown';
+import Toast from 'react-native-toast-message';
 
 const JoinScreen = () => {
   const {userData} = useFetchUserData();
@@ -209,7 +210,10 @@ const JoinScreen = () => {
         ps: policeStation,
         district: district,
       });
-      if (result.status === 404) {
+      if (result.status === 200) {
+        showToast();
+        console.log('Joined successfully');
+      } else if (result.status === 404) {
         console.log('User not found');
       } else if (result.status === 401) {
         console.log('Only users can join');
@@ -224,6 +228,14 @@ const JoinScreen = () => {
 
   // District list
   const districts = ['Kokrajhar', 'Chirang', 'Udalguri', 'Baksa', 'Tamulpur'];
+
+  // Toast
+  const showToast = () => {
+    Toast.show({
+      type: 'success',
+      text1: 'Joined BPF successfully',
+    });
+  };
 
   return (
     <SafeAreaProvider style={styles.container}>

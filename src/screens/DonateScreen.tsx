@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {
   Dimensions,
+  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -11,6 +12,9 @@ import {
 import NavHeader from '../components/Header/NavHeader';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import useFetchUserData from '../data/userData';
+import RNUpiPayment from 'react-native-upi-payment';
+import Modal from 'react-native-modal';
+import Toast from 'react-native-toast-message';
 
 const DonateScreen = () => {
   const {userData} = useFetchUserData();
@@ -42,6 +46,27 @@ const DonateScreen = () => {
     if (amount === '') {
       setAmountEmpty(true);
     }
+    if (name !== '' && email !== '' && amount !== '') {
+      RNUpiPayment.initializePayment(
+        {
+          vpa: 'bodolandpeoplesfront@sbi',
+          payeeName: 'Bodoland Peoples Front',
+          transactionNote: 'Donate BPF',
+          amount: amount,
+          transactionRef: 'aasf-332-aoei-fn',
+        },
+        successCallback,
+        failureCallback,
+      );
+    }
+  };
+  const successCallback = (data: any) => {
+    showToast('success', 'Donation succeeded');
+    console.log(data);
+  };
+  const failureCallback = (data: any) => {
+    showToast('error', 'Oops! donation failed');
+    console.log(data);
   };
 
   // Handle scanner visibility
@@ -49,9 +74,32 @@ const DonateScreen = () => {
     setScannerVisible(true);
   };
 
+  // Toast
+  const showToast = (type: string, message: string) => {
+    Toast.show({
+      type: type,
+      text1: message,
+    });
+  };
+
   return (
     <SafeAreaProvider>
       <ScrollView showsVerticalScrollIndicator={false}>
+        <View style={styles.popupContainer}>
+          <Modal isVisible={scannerVisible}>
+            <View style={styles.popupContainer}>
+              <Image
+                style={styles.scannerImage}
+                source={require('../assets/images/scanner.jpg')}
+              />
+              <TouchableOpacity
+                style={styles.hideScannerButton}
+                onPress={() => setScannerVisible(false)}>
+                <Text style={styles.buttonText}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </Modal>
+        </View>
         <NavHeader title={'Donate us'} />
         <View style={styles.container}>
           <View style={styles.donateForm}>
@@ -118,6 +166,23 @@ const DonateScreen = () => {
 export default DonateScreen;
 
 const styles = StyleSheet.create({
+  popupContainer: {
+    alignContent: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  scannerImage: {
+    width: Dimensions.get('window').width - 20,
+    height: Dimensions.get('window').width + 130,
+    borderRadius: 5,
+  },
+  hideScannerButton: {
+    backgroundColor: '#FF671F',
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    borderRadius: 10,
+    marginTop: 16,
+  },
   container: {
     flex: 1,
     color: '#000',

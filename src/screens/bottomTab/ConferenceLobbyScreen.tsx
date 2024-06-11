@@ -18,6 +18,7 @@ import {create_room, join_room} from '../../api/conference_api';
 import useFetchUserData from '../../data/userData';
 import FAB from '../../components/FloatingActionButton/FAB';
 import FAB_Poster from '../../components/FloatingActionButton/FAB_Poster';
+import Toast from 'react-native-toast-message';
 
 const ConferenceLobbyScreen = () => {
   const {userData, admin, postAdmin} = useFetchUserData();
@@ -55,6 +56,7 @@ const ConferenceLobbyScreen = () => {
       setCreateInputFieldColor('red');
     } else {
       navigateToConference(newRoomName, userId);
+      showToast('Room created successfully');
       try {
         const result = await create_room({
           roomName: newRoomName,
@@ -86,6 +88,7 @@ const ConferenceLobbyScreen = () => {
         });
         if (result.data) {
           navigateToConference(joinRoomName, userId);
+          showToast('Room joined successfully');
           console.log('Joined room successfully');
         } else if (result.status === 404) {
           setPlaceholderJoin('Invalid room name!');
@@ -110,11 +113,18 @@ const ConferenceLobbyScreen = () => {
   const [refreshing, setRefreshing] = React.useState(false);
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
-    // fetchRooms();  //TODO create function to fetch room list
     setTimeout(() => {
       setRefreshing(false);
     }, 2000);
   }, []);
+
+  // Toast
+  const showToast = (message: string) => {
+    Toast.show({
+      type: 'success',
+      text1: message,
+    });
+  };
 
   return (
     <SafeAreaProvider>

@@ -16,6 +16,7 @@ import {get_single_post} from '../../api/app_data_apis';
 import useFetchUserData from '../../data/userData';
 // import {update_post} from '../../api/update_app_data_apis.js';
 import axios from 'axios';
+import Toast from 'react-native-toast-message';
 
 const ViewPostScreen = ({route}: any) => {
   const postId = route.params.postId;
@@ -72,6 +73,7 @@ const ViewPostScreen = ({route}: any) => {
         },
       );
       if (response.status === 200) {
+        showToast();
         console.log('Post updated successfully:', response);
         setEdited(false);
       } else {
@@ -80,6 +82,14 @@ const ViewPostScreen = ({route}: any) => {
     } catch (error) {
       console.error('Error updating post:', error);
     }
+  };
+
+  // Toast
+  const showToast = () => {
+    Toast.show({
+      type: 'success',
+      text1: 'Post updated successfully',
+    });
   };
 
   return (

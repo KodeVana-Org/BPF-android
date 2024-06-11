@@ -25,6 +25,7 @@ import {
   validateEmailPhone,
   validatePassword,
 } from '../../validation/validateInputDetails';
+import Toast from 'react-native-toast-message';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -102,6 +103,7 @@ const LoginPassScreen = () => {
         password: password,
       });
       if (result.status === 200) {
+        showToast();
         handleNavigateToHome();
         storeToken(result.data.token);
       } else if (result.status === 404) {
@@ -128,6 +130,14 @@ const LoginPassScreen = () => {
     } catch (error) {
       console.log('Error storing token:', error);
     }
+  };
+
+  // Toast
+  const showToast = () => {
+    Toast.show({
+      type: 'success',
+      text1: 'Logged in successfully',
+    });
   };
 
   return (

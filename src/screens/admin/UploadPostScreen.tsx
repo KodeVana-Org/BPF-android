@@ -16,6 +16,7 @@ import ImagePicker from 'react-native-image-crop-picker';
 import NavHeader from '../../components/Header/NavHeader';
 import ApiManager from '../../api/ApiManager';
 import useFetchUserData from '../../data/userData';
+import Toast from 'react-native-toast-message';
 
 const UploadPostScreen = () => {
   const [imageSelectionMessage, setImageSelectionMessage] = useState(
@@ -67,6 +68,7 @@ const UploadPostScreen = () => {
           },
         });
         if (result.status === 200) {
+          showToast();
           console.log('Post uploaded successfully!');
           setPostImageUrl(null);
           setImageSelectionMessage('Post uploaded seccessfully!');
@@ -110,6 +112,14 @@ const UploadPostScreen = () => {
       setRefreshing(false);
     }, 2000);
   }, []);
+
+  // Toast
+  const showToast = () => {
+    Toast.show({
+      type: 'success',
+      text1: 'Post uploaded successfully',
+    });
+  };
 
   return (
     <SafeAreaView style={styles.container}>

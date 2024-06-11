@@ -4,6 +4,7 @@ import {SafeAreaProvider} from 'react-native-safe-area-context';
 import AgoraUIKit from 'agora-rn-uikit';
 import {useNavigation} from '@react-navigation/native';
 import {leave_room} from '../../api/conference_api';
+import Toast from 'react-native-toast-message';
 
 const ConferenceStreamScreen = ({route}: any) => {
   const navigation = useNavigation();
@@ -27,6 +28,7 @@ const ConferenceStreamScreen = ({route}: any) => {
         });
         navigation.goBack();
         if (result.data) {
+          showToast();
           console.log('Left room successfully!');
         } else if (result.status !== 200) {
           console.log('Error leaving room');
@@ -35,6 +37,14 @@ const ConferenceStreamScreen = ({route}: any) => {
         console.error('Error leaving room:', error);
       }
     },
+  };
+
+  // Toast
+  const showToast = () => {
+    Toast.show({
+      type: 'success',
+      text1: 'Left room successfully',
+    });
   };
 
   return (

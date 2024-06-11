@@ -16,6 +16,7 @@ import {SafeAreaProvider} from 'react-native-safe-area-context';
 import ImagePicker from 'react-native-image-crop-picker';
 import {get_banners} from '../../api/app_data_apis';
 import ApiManager from '../../api/ApiManager';
+import Toast from 'react-native-toast-message';
 
 export default function EditBannerScreen() {
   const [postImageUrl, setPostImageUrl] = useState(null);
@@ -79,6 +80,7 @@ export default function EditBannerScreen() {
           );
           if (retryResult.status === 200) {
             console.log('Banner uploaded successfully!');
+            showToast();
             setPostImageUrl(null);
             setShowUploadDialog(false);
             setUploadBannerMessage('Banner uploaded successfully!');
@@ -117,6 +119,14 @@ export default function EditBannerScreen() {
       setRefreshing(false);
     }, 2000);
   }, []);
+
+  // Toast
+  const showToast = () => {
+    Toast.show({
+      type: 'success',
+      text1: 'Banner uploaded successfully',
+    });
+  };
 
   return (
     <SafeAreaProvider style={styles.container}>

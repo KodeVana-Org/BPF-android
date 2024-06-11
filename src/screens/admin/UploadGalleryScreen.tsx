@@ -17,6 +17,7 @@ import ImagePicker from 'react-native-image-crop-picker';
 import NavHeader from '../../components/Header/NavHeader';
 import ApiManager from '../../api/ApiManager';
 import {get_gallery} from '../../api/app_data_apis';
+import Toast from 'react-native-toast-message';
 
 const UploadGalleryScreen = () => {
   const [imageSelectionMessage, setImageSelectionMessage] = useState(
@@ -37,7 +38,7 @@ const UploadGalleryScreen = () => {
   const openImagePicker = () => {
     ImagePicker.openPicker({
       width: 300,
-      height: 300,
+      height: 223,
       cropping: true,
     }).then(image => {
       setGalleryImageUrl(image.path);
@@ -89,6 +90,7 @@ const UploadGalleryScreen = () => {
               },
             );
             if (retryResult.status === 200) {
+              showToast();
               console.log('Gallery uploaded successfully!');
               setGalleryImageUrl(null);
               setImageSelectionMessage('Gallery uploaded seccessfully!');
@@ -133,6 +135,14 @@ const UploadGalleryScreen = () => {
       setRefreshing(false);
     }, 2000);
   }, []);
+
+  // Toast
+  const showToast = () => {
+    Toast.show({
+      type: 'success',
+      text1: 'Gallery uploaded successfully',
+    });
+  };
 
   return (
     <SafeAreaView style={styles.container}>

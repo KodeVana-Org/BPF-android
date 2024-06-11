@@ -18,6 +18,7 @@ import {AppContext} from '../../navigator/AppContext';
 import {set_password} from '../../api/auth_apis';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {validatePassword} from '../../validation/validateInputDetails';
+import Toast from 'react-native-toast-message';
 
 interface Props {
   route: {
@@ -109,6 +110,7 @@ const RegisterScreen = ({route}: Props) => {
         password: password,
       });
       if (result.status === 200) {
+        showToast();
         handleNavigateToHome();
         storeToken(result.data.token);
       } else {
@@ -128,6 +130,14 @@ const RegisterScreen = ({route}: Props) => {
     } catch (error) {
       console.log('Error storing token:', error);
     }
+  };
+
+  // Toast
+  const showToast = () => {
+    Toast.show({
+      type: 'success',
+      text1: 'Password changed successfully',
+    });
   };
 
   return (

@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
   },
   image: {
     width: width - 40,
-    height: width - 40,
+    height: width - 60,
     borderRadius: 7,
   },
   text: {

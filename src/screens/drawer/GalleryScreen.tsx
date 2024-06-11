@@ -1,11 +1,9 @@
 import React from 'react';
-import {Dimensions, ScrollView, StyleSheet} from 'react-native';
+import {ScrollView, StyleSheet} from 'react-native';
 import NavHeader from '../../components/Header/NavHeader';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import Animated from 'react-native-reanimated';
 import GalleryFlatlist from '../../components/GalleryFlatlist/GalleryFlatlist';
-
-const width = Dimensions.get('window').width;
 
 const GalleryScreen = () => {
   return (
@@ -31,9 +29,5 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     marginTop: 10,
-  },
-  image: {
-    height: width,
-    width: width,
   },
 });

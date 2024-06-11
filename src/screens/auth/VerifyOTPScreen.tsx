@@ -24,6 +24,7 @@ import {StackNavigationProp} from '@react-navigation/stack';
 import {AuthParamList} from '../../navigator/AuthNavigator';
 import {useNavigation} from '@react-navigation/native';
 import {validateOTP} from '../../validation/validateInputDetails';
+import Toast from 'react-native-toast-message';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -98,6 +99,7 @@ const VerifyOTPScreen = ({route}: Props) => {
         otp: otp,
       });
       if (result.data.token) {
+        showToast();
         otpErrorMessageType('OTP verified successfully');
         storeToken(result.data.token);
         handleNavigateToHome();
@@ -119,6 +121,7 @@ const VerifyOTPScreen = ({route}: Props) => {
         otp: otp,
       });
       if (result.status === 200) {
+        showToast();
         otpErrorMessageType('OTP verified successfully');
         storeToken(result.token);
         handleNavigateToHome();
@@ -183,6 +186,14 @@ const VerifyOTPScreen = ({route}: Props) => {
     // } else {
     //   resetUserPassword();
     // }
+  };
+
+  // Toast
+  const showToast = () => {
+    Toast.show({
+      type: 'success',
+      text1: 'OTP verified successfully',
+    });
   };
 
   return (
