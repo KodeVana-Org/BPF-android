@@ -19,12 +19,13 @@ import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {AuthParamList} from '../../navigator/AuthNavigator';
 import {AppContext} from '../../navigator/AppContext';
-import {user_login_pass} from '../../api/auth_api';
+import {user_login_pass} from '../../api/auth_apis';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   validateEmailPhone,
   validatePassword,
 } from '../../validation/validateInputDetails';
+import Toast from 'react-native-toast-message';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -48,10 +49,10 @@ const LoginPassScreen = () => {
   const [emailPhone, setEmailPhone] = useState('');
   const [password, setPassword] = useState('');
   const handleEmailPhoneInputChange = (text: string) => {
-    setEmailPhone(text);
+    setEmailPhone(text.trim());
   };
   const handlePasswordInputChange = (text: string) => {
-    setPassword(text);
+    setPassword(text.trim());
   };
 
   // Handle input field error messages
@@ -101,18 +102,24 @@ const LoginPassScreen = () => {
         emailPhone: emailPhone.toLocaleLowerCase(),
         password: password,
       });
-      if (result.data.token) {
+      if (result.status === 200) {
+        showToast();
         handleNavigateToHome();
         storeToken(result.data.token);
-      } else if (result.status !== 200) {
-        emailPhoneErrorMessageType('Invalid input details!');
-        passwordErrorMessageType('Invalid input details!');
+      } else if (result.status === 404) {
+        emailPhoneErrorMessageType('Wrong input details!');
         setEmailPhoneErrorMessageVisible(true);
+      } else if (result.status === 401) {
+        passwordErrorMessageType('Wrong password!');
         setPasswordErrorMessageVisible(true);
+      } else if (result) {
       }
     } catch (error) {
+      emailPhoneErrorMessageType('Please try again!');
+      passwordErrorMessageType('Please try again!');
+      setEmailPhoneErrorMessageVisible(true);
+      setPasswordErrorMessageVisible(true);
       console.log('Error logging user:', error);
-      console.log(error);
     }
   };
 
@@ -123,6 +130,14 @@ const LoginPassScreen = () => {
     } catch (error) {
       console.log('Error storing token:', error);
     }
+  };
+
+  // Toast
+  const showToast = () => {
+    Toast.show({
+      type: 'success',
+      text1: 'Logged in successfully',
+    });
   };
 
   return (
@@ -297,7 +312,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 30,
     borderRadius: 15,
-    opacity: 50,
     ...(Platform.OS === 'ios'
       ? {
           shadowColor: '#000',

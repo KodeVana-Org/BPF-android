@@ -1,4 +1,4 @@
-package com.bpfparty
+package com.kodevana.bpf
 
 import android.app.Application
 import com.facebook.react.PackageList

@@ -1,6 +1,6 @@
 import ApiManager from './ApiManager';
 
-// Register new user
+///// Register new user /////
 interface RegisterData {
   emailPhone: string;
 }
@@ -15,7 +15,7 @@ export const user_register = async (data: RegisterData): Promise<any> => {
   }
 };
 
-// Verify New user registration OTP
+///// Verify New user registration OTP /////
 interface RegisterOtpData {
   emailPhone: string;
   password: string;
@@ -37,7 +37,7 @@ export const verify_register_otp = async (
   }
 };
 
-// Login user with password
+///// Login user with password /////
 interface PassLoginData {
   emailPhone: string;
   password: string;
@@ -52,12 +52,12 @@ export const user_login_pass = async (data: PassLoginData): Promise<any> => {
   }
 };
 
-// Login user with otp
-interface OTPLoginData {
+///// Login user with otp /////
+interface LoginWithOTPData {
   emailPhone: string;
 }
 
-export const user_login_otp = async (data: OTPLoginData): Promise<any> => {
+export const user_login_otp = async (data: LoginWithOTPData): Promise<any> => {
   try {
     const response = await ApiManager.post('user/login-with-otp', data);
     return response.data;
@@ -70,13 +70,15 @@ export const user_login_otp = async (data: OTPLoginData): Promise<any> => {
   }
 };
 
-// Verify Login OTP
-interface LoginOtpData {
+///// Verify Login OTP /////
+interface VerifyLoginOtpData {
   emailPhone: string;
   otp: string;
 }
 
-export const verify_login_otp = async (data: LoginOtpData): Promise<any> => {
+export const verify_login_otp = async (
+  data: VerifyLoginOtpData,
+): Promise<any> => {
   try {
     const response = await ApiManager.post('user/verify-for-login', data);
     return response.data;
@@ -86,7 +88,7 @@ export const verify_login_otp = async (data: LoginOtpData): Promise<any> => {
   }
 };
 
-// Forgot Passsword
+///// Forgot Passsword /////
 interface ForgotPassData {
   emailPhone: string;
 }
@@ -104,7 +106,7 @@ export const user_forgot_pass = async (data: ForgotPassData): Promise<any> => {
   }
 };
 
-// Forgot Passsword verify otp
+///// Forgot Passsword verify otp /////
 interface ForgotPassOTPData {
   emailPhone: string;
   otp: string;
@@ -125,7 +127,7 @@ export const forgot_pass_otp = async (
   }
 };
 
-// Forgot Passsword set password
+///// Forgot Passsword set password /////
 interface SetPassData {
   emailPhone: string;
   password: string;
@@ -142,16 +144,42 @@ export const set_password = async (data: SetPassData): Promise<any> => {
 };
 
 /////////////////** USER TOKEN VERIFICATION **/////////////////
-interface UserData {
+interface VerifyTokenData {
   headers: any;
 }
 
-export const verify_Token = async (data: UserData): Promise<any> => {
+export const verify_Token = async (data: VerifyTokenData): Promise<any> => {
   try {
     const response = await ApiManager.get('user/auth', data);
     return response.data;
   } catch (error: any) {
-    console.log('Error occurred during accessing gallery:', error.message);
+    console.log('Error occurred accessing user details:', error.message);
+    return error.response.data;
+  }
+};
+
+/////////////////** GET ALL USERS **/////////////////
+export const get_users = async (): Promise<any> => {
+  try {
+    const response = await ApiManager.get('admin/all-user');
+    return response.data;
+  } catch (error: any) {
+    console.log('Error occurred accessing all users:', error.message);
+    return error.response.data;
+  }
+};
+
+/////////////////** GET SINGLE USER DATA **/////////////////
+interface UserData {
+  userId: string;
+}
+
+export const get_single_user = async (data: UserData): Promise<any> => {
+  try {
+    const response = await ApiManager.get(`admin/single-user/${data.userId}`);
+    return response.data;
+  } catch (error: any) {
+    console.log('Error occurred accessing single users:', error.message);
     return error.response.data;
   }
 };

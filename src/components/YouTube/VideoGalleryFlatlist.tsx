@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {View, Text, StyleSheet, FlatList} from 'react-native';
-import axios from 'axios';
 import {WebView} from 'react-native-webview';
+import ApiManager from '../../api/ApiManager';
 
 const YouTubeVideoFLatlist = () => {
   const [videos, setVideos] = useState([]);
@@ -12,9 +12,7 @@ const YouTubeVideoFLatlist = () => {
 
   const fetchVideos = async () => {
     try {
-      const response = await axios.get(
-        'http://13.235.94.196:6969/youtube/videos',
-      );
+      const response = await ApiManager.get('youtube/videos');
       const videosData = response.data.map((video: any) => ({
         ...video,
         duration: Math.round(video.duration / 60),
@@ -38,7 +36,9 @@ const YouTubeVideoFLatlist = () => {
         Duration: {item.duration} minutes
       </Text>
       <Text style={styles.title}>{item.title}</Text>
-      <Text style={styles.publishDate}>Published in: {item.publishedAt}</Text>
+      <Text style={styles.publishDate}>
+        Published in: {item.publishedAt.substring(0, 10)}
+      </Text>
     </View>
   );
 
@@ -49,6 +49,7 @@ const YouTubeVideoFLatlist = () => {
         renderItem={renderItem}
         keyExtractor={(item, index) => index.toString()}
         showsVerticalScrollIndicator={false}
+        initialNumToRender={3}
       />
     </View>
   );

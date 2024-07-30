@@ -17,7 +17,7 @@ import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {AuthParamList} from '../../navigator/AuthNavigator';
 import {AppContext} from '../../navigator/AppContext';
-import {user_login_otp} from '../../api/auth_api';
+import {user_login_otp} from '../../api/auth_apis';
 import {validateEmailPhone} from '../../validation/validateInputDetails';
 
 const windowWidth = Dimensions.get('window').width;
@@ -35,7 +35,7 @@ const LoginOtpScreen = () => {
   // Handle saving form data
   const [emailPhone, setEmailPhone] = useState('');
   const handleEmailPhoneInputChange = (text: string) => {
-    setEmailPhone(text);
+    setEmailPhone(text.trim());
   };
 
   // Handle input field error messages
@@ -67,19 +67,21 @@ const LoginOtpScreen = () => {
       const result = await user_login_otp({
         emailPhone: emailPhone.toLocaleLowerCase(),
       });
-      if (result.data) {
+      if (result.status === 200) {
         navigation.navigate('VerifyOTP', {
           EmailPhone: emailPhone,
           Password: '',
           Purpose: 'login',
         } as any);
-      } else if (result.status !== 200) {
-        emailPhoneErrorMessageType('Invalid input details!');
+      } else if (result.status === 404) {
+        emailPhoneErrorMessageType('Wrong input details!');
+        setEmailPhoneErrorMessageVisible(true);
+      } else if (result.status === 500) {
+        emailPhoneErrorMessageType('Please try again!');
         setEmailPhoneErrorMessageVisible(true);
       }
     } catch (error) {
       console.error('Error logging user:', error);
-      console.error(error);
     }
   };
 
@@ -223,7 +225,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 30,
     borderRadius: 15,
-    opacity: 50,
     ...(Platform.OS === 'ios'
       ? {
           shadowColor: '#000',

@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import {FlatList, View, Image, StyleSheet, Dimensions} from 'react-native';
-import {get_gallery} from '../../api/app_data_api';
+import {get_gallery} from '../../api/app_data_apis';
 
 const {width} = Dimensions.get('window');
 
@@ -52,6 +52,7 @@ const GalleryFlatlist = ({
         showsVerticalScrollIndicator={false}
         keyExtractor={(item, index) => index.toString()}
         contentContainerStyle={{paddingRight: horizontal ? 16 : 0}}
+        initialNumToRender={3}
         renderItem={({item}) => (
           <View style={[styles.postContainer, calculateMargin()]}>
             <Image source={{uri: item.imageUrl[0]}} style={styles.image} />
@@ -78,11 +79,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 10,
     borderWidth: 0.2,
-    width: width - 40,
+    width: width - 20,
   },
   image: {
-    width: '100%',
-    height: 300,
+    width: width - 40,
+    height: width - 60,
     borderRadius: 7,
   },
   text: {

@@ -19,15 +19,18 @@ import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {DrawerParamList} from '../../navigator/DrawerNavigator';
 import useFetchUserData from '../../data/userData';
+import {RootStackParamList} from '../../navigator/RootNavigator';
 
 const windowHeight = Dimensions.get('window').height;
 
 function CustomDrawer(props: any) {
   const {setNavigateToHome} = useContext(AppContext);
+  const [userDP, setUserDP] = useState(false);
+  const [userName, setUserName] = useState('');
   const [token, setToken] = useState<string | null>(null);
   const drawerNavigation =
     useNavigation<StackNavigationProp<DrawerParamList>>();
-  const userData = useFetchUserData();
+  const {userData} = useFetchUserData();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -35,8 +38,31 @@ function CustomDrawer(props: any) {
         const accessToken = await AsyncStorage.getItem('AccessToken');
         if (accessToken) {
           setToken(accessToken);
-        } else {
-          console.log('Access token is null');
+          if (
+            userData.profileImage === null ||
+            userData.profileImage === undefined
+          ) {
+            setUserDP(false);
+          } else {
+            setUserDP(true);
+          }
+          if (userData.name === undefined || userData.name === null) {
+            if (userData.userType === 'superAdmin') {
+              setUserName('Super admin');
+            } else if (userData.userType === 'admin') {
+              setUserName('Admin');
+            } else if (userData.userType === 'post-admin') {
+              setUserName('Post admin');
+            } else if (userData.userType === 'member') {
+              setUserName('Member');
+            } else if (userData.userType === 'joined') {
+              setUserName('Joined');
+            } else if (userData.userType === 'user') {
+              setUserName('User');
+            }
+          } else {
+            abbreviateFullName(userData.name);
+          }
         }
       } catch (error) {
         console.error('Error accessing token:', error);
@@ -44,10 +70,29 @@ function CustomDrawer(props: any) {
     };
     setTimeout(() => {
       fetchUserData();
-    }, 200);
+    }, 80);
   }, [userData]);
 
+  // Display abbreviate name
+  const abbreviateFullName = (fullName: string) => {
+    const parts = fullName.split(' ');
+    if (parts.length === 1) {
+      setUserName(fullName);
+      return;
+    }
+    const firstNameInitial = parts[0][0].toUpperCase() + '.';
+    let abbreviatedName = firstNameInitial;
+    if (parts.length > 2) {
+      for (let i = 1; i < parts.length - 1; i++) {
+        abbreviatedName += ' ' + parts[i][0].toUpperCase() + '.';
+      }
+    }
+    abbreviatedName += ' ' + parts[parts.length - 1];
+    setUserName(abbreviatedName);
+  };
+
   const {navigation} = props;
+  const navigationJD = useNavigation<StackNavigationProp<RootStackParamList>>();
   return (
     <DrawerContentScrollView
       {...props}
@@ -64,12 +109,21 @@ function CustomDrawer(props: any) {
               start={{x: 0, y: 0}}
               end={{x: 0, y: 1}}
             />
-            <Image
-              source={require('../../assets/images/PartyEmblem.png')}
-              style={{height: 80, width: 120, opacity: 50}}
-            />
-            <Text style={styles.userName}>{userData.email}</Text>
-            <Text style={styles.userID}>{userData.userType}</Text>
+            <View style={styles.userDataContainer}>
+              {userDP ? (
+                <Image
+                  source={{uri: userData.profileImage}}
+                  style={styles.profileImage}
+                />
+              ) : (
+                <Image
+                  source={require('../../assets/icons/profile-user.png')}
+                  style={styles.profileImage}
+                />
+              )}
+              <Text style={styles.userName}>{userName}</Text>
+              <Text style={styles.userID}>ID: {userData.userId}</Text>
+            </View>
           </Pressable>
         ) : (
           <View style={styles.profileContainer}>
@@ -79,18 +133,20 @@ function CustomDrawer(props: any) {
               start={{x: 0, y: 0}}
               end={{x: 0, y: 1}}
             />
-            <Image
-              source={require('../../assets/images/PartyEmblem.png')}
-              style={{height: 80, width: 120, opacity: 50}}
-            />
-            <Text style={styles.userName}>Bodoland Peoples' Front</Text>
+            <View style={styles.partyDataContainer}>
+              <Image
+                source={require('../../assets/images/PartyEmblem.png')}
+                style={{height: 80, width: 120, opacity: 0.8}}
+              />
+              <Text style={styles.partyName}>Bodoland Peoples' Front</Text>
+            </View>
           </View>
         )}
         <ScrollView style={styles.navItemListContainer}>
           <TouchableOpacity
             style={styles.navItemContainer}
             onPress={() => navigation.navigate('History')}>
-            <Text style={styles.navLinkText}>History</Text>
+            <Text style={styles.navLinkText}>History of BTC</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.navItemContainer}
@@ -100,7 +156,7 @@ function CustomDrawer(props: any) {
           <TouchableOpacity
             style={styles.navItemContainer}
             onPress={() => navigation.navigate('Achievement')}>
-            <Text style={styles.navLinkText}>Achievement</Text>
+            <Text style={styles.navLinkText}>Achievements</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.navItemContainer}
@@ -109,18 +165,23 @@ function CustomDrawer(props: any) {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.navItemContainer}
-            onPress={() => navigation.navigate('SixthShedule')}>
-            <Text style={styles.navLinkText}>6th Shedule</Text>
+            onPress={() => navigation.navigate('SixthSchedule')}>
+            <Text style={styles.navLinkText}>6th Schedule</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.navItemContainer}
-            onPress={() => navigation.navigate('Vission')}>
-            <Text style={styles.navLinkText}>Vission</Text>
+            onPress={() => navigation.navigate('Vision')}>
+            <Text style={styles.navLinkText}>Vision</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.navItemContainer}
             onPress={() => navigation.navigate('Gallery')}>
             <Text style={styles.navLinkText}>Gallery</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.navItemContainer}
+            onPress={() => navigationJD.navigate('Donate')}>
+            <Text style={styles.navLinkText}>Donate us</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.navItemContainer}
@@ -181,9 +242,24 @@ const styles = StyleSheet.create({
   profileContainer: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
     position: 'relative',
     marginTop: -10,
+  },
+  partyDataContainer: {
+    alignItems: 'center',
+    paddingTop: 20,
+  },
+  userDataContainer: {
+    paddingTop: 20,
+    alignSelf: 'flex-start',
+    marginLeft: 30,
+  },
+  profileImage: {
+    height: 60,
+    width: 60,
+    marginTop: 0,
+    backgroundColor: 'white',
+    borderRadius: 50,
   },
   gradient: {
     height: '100%',
@@ -196,9 +272,15 @@ const styles = StyleSheet.create({
     borderRadius: 40,
     marginTop: 30,
   },
-  userName: {
+  partyName: {
     fontSize: 22,
     paddingTop: 20,
+    fontWeight: '600',
+    color: '#000',
+  },
+  userName: {
+    fontSize: 22,
+    paddingTop: 10,
     fontWeight: '600',
     color: '#000',
   },

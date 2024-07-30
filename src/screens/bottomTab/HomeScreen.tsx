@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React from 'react';
 import {
   StyleSheet,
   ScrollView,
@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Text,
   Dimensions,
+  RefreshControl,
 } from 'react-native';
 import Animated from 'react-native-reanimated';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
@@ -13,7 +14,7 @@ import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {SystemBars} from 'react-native-bars';
 
 import Header from '../../components/Header/Header';
-import ImageCarousal from '../../components/Corousel/ImageCarousal';
+import BannerCarousal from '../../components/Corousel/BannerCorousal';
 import PostFlatList from '../../components/PostFlatlist/PostFlatList';
 import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
@@ -24,38 +25,40 @@ import useFetchUserData from '../../data/userData';
 import FAB from '../../components/FloatingActionButton/FAB';
 import FAB_Poster from '../../components/FloatingActionButton/FAB_Poster';
 import LinearGradient from 'react-native-linear-gradient';
+import JoinDonate from '../../components/Join_Donate/JoinDonate';
 
 const HomeScreen = ({navigation}: any) => {
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isPostAdmin, setIsPostAdmin] = useState(false);
   const bottomNavigation =
     useNavigation<StackNavigationProp<BottomTabParamList>>();
   const drawerNavigation =
     useNavigation<StackNavigationProp<DrawerParamList>>();
-  const userData = useFetchUserData();
+  const {admin, postAdmin} = useFetchUserData();
 
-  useEffect(() => {
-    if (Object.keys(userData).length !== 0) {
-      if (userData.userType === 'admin' || userData.userType === 'superAdmin') {
-        setIsAdmin(true);
-      } else if (userData.userType === 'post-admin') {
-        setIsPostAdmin(true);
-      } else {
-        setIsPostAdmin(false);
-        setIsAdmin(false);
-      }
-    }
-  }, [userData]);
+  // Refresh control
+  const [refreshing, setRefreshing] = React.useState(false);
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  }, []);
 
   return (
     <SafeAreaProvider>
       <Header title="Bodoland Peoples' Front" drawerNavigation={navigation} />
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }>
         <GestureHandlerRootView style={{flex: 1}}>
           {/* If you're not using react-native-bars, you can remove SystemBars */}
           <SystemBars animated={true} barStyle={'light-content'} />
           <Animated.View style={[styles.container]}>
-            <ImageCarousal />
+            {/* Banner carousal */}
+            <BannerCarousal />
+            {/* Join Donate */}
+            <JoinDonate />
             {/* PostList */}
             <View style={styles.postListContainer}>
               <View style={styles.headerNav}>
@@ -113,7 +116,7 @@ const HomeScreen = ({navigation}: any) => {
           </Animated.View>
         </GestureHandlerRootView>
       </ScrollView>
-      {isAdmin ? <FAB /> : isPostAdmin ? <FAB_Poster /> : null}
+      {admin ? <FAB /> : postAdmin ? <FAB_Poster /> : null}
     </SafeAreaProvider>
   );
 };
@@ -128,12 +131,12 @@ const styles = StyleSheet.create({
   },
   postListContainer: {
     flex: 1,
-    marginHorizontal: 20,
+    paddingHorizontal: 20,
     marginTop: 20,
   },
   galleryListContainer: {
     flex: 1,
-    marginHorizontal: 20,
+    paddingHorizontal: 20,
     marginTop: 30,
   },
   headerNav: {

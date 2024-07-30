@@ -17,7 +17,7 @@ import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {AuthParamList} from '../../navigator/AuthNavigator';
 import {AppContext} from '../../navigator/AppContext';
-import {user_forgot_pass} from '../../api/auth_api';
+import {user_forgot_pass} from '../../api/auth_apis';
 import {validateEmailPhone} from '../../validation/validateInputDetails';
 
 const windowWidth = Dimensions.get('window').width;
@@ -35,7 +35,7 @@ const ForgotPasswordScreen = () => {
   // Handle saving form data
   const [emailPhone, setEmailPhone] = useState('');
   const handleEmailPhoneInputChange = (text: string) => {
-    setEmailPhone(text);
+    setEmailPhone(text.trim());
   };
 
   // Handle input field error messages
@@ -67,13 +67,13 @@ const ForgotPasswordScreen = () => {
       const result = await user_forgot_pass({
         emailPhone: emailPhone.toLocaleLowerCase(),
       });
-      if (result.data) {
+      if (result.status === 200) {
         navigation.navigate('VerifyOTP', {
           EmailPhone: emailPhone,
           Password: '',
           Purpose: 'resetPassword',
         } as any);
-      } else if (result.status !== 200) {
+      } else if (result.status === 404) {
         emailPhoneErrorMessageType('Invalid details!');
         setEmailPhoneErrorMessageVisible(true);
       }
@@ -115,12 +115,12 @@ const ForgotPasswordScreen = () => {
               value={emailPhone}
               style={styles.inputField}
             />
+            {emailPhoneErrorMessageVisible ? (
+              <Text style={{color: 'red', marginTop: 5}}>
+                {emailPhoneErrorMessage}
+              </Text>
+            ) : null}
           </View>
-          {emailPhoneErrorMessageVisible ? (
-            <Text style={{color: 'red', marginTop: 5}}>
-              {emailPhoneErrorMessage}
-            </Text>
-          ) : null}
           <View style={styles.sendOTPContainer}>
             <TouchableOpacity
               style={styles.sendOTP}
@@ -223,7 +223,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 30,
     borderRadius: 15,
-    opacity: 50,
     ...(Platform.OS === 'ios'
       ? {
           shadowColor: '#000',

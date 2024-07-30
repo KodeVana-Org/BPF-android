@@ -10,8 +10,8 @@ import {
   CommitteeScreen,
   AchievementScreen,
   ConstitutionScreen,
-  SixthSheduleScreen,
-  VissionScreen,
+  SixthScheduleScreen,
+  VisionScreen,
   GalleryScreen,
   AboutScreen,
 } from '../screens';
@@ -24,8 +24,8 @@ export type DrawerParamList = {
   Committee: undefined;
   Achievement: undefined;
   Constitution: undefined;
-  SixthShedule: undefined;
-  Vission: undefined;
+  SixthSchedule: undefined;
+  Vision: undefined;
   Gallery: undefined;
   About: undefined;
 };
@@ -43,8 +43,8 @@ const DrawerNavigator = () => {
       <Drawer.Screen name="Committee" component={CommitteeScreen} />
       <Drawer.Screen name="Achievement" component={AchievementScreen} />
       <Drawer.Screen name="Constitution" component={ConstitutionScreen} />
-      <Drawer.Screen name="SixthShedule" component={SixthSheduleScreen} />
-      <Drawer.Screen name="Vission" component={VissionScreen} />
+      <Drawer.Screen name="SixthSchedule" component={SixthScheduleScreen} />
+      <Drawer.Screen name="Vision" component={VisionScreen} />
       <Drawer.Screen name="Gallery" component={GalleryScreen} />
       <Drawer.Screen name="About" component={AboutScreen} />
     </Drawer.Navigator>

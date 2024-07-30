@@ -8,7 +8,7 @@ import AchievementFlateList from '../../components/AchievementFlateList/Achievem
 const AchievementScreen = () => {
   return (
     <SafeAreaProvider style={styles.container}>
-      <Animated.View style={[styles.container]}>
+      <Animated.View style={styles.container}>
         <NavHeader title={'Achievements'} />
         <ScrollView
           showsVerticalScrollIndicator={false}
@@ -28,6 +28,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   achievementContainer: {
-    marginTop: 10,
+    paddingTop: 10,
   },
 });

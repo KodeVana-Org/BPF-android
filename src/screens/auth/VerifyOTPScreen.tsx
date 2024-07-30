@@ -17,13 +17,14 @@ import {
   forgot_pass_otp,
   verify_login_otp,
   verify_register_otp,
-} from '../../api/auth_api';
+} from '../../api/auth_apis';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {AppContext} from '../../navigator/AppContext';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {AuthParamList} from '../../navigator/AuthNavigator';
 import {useNavigation} from '@react-navigation/native';
 import {validateOTP} from '../../validation/validateInputDetails';
+import Toast from 'react-native-toast-message';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -53,7 +54,7 @@ const VerifyOTPScreen = ({route}: Props) => {
   const purpose = route.params.Purpose;
   const [otp, setOtp] = useState('');
   const handleOtpInputChange = (text: string) => {
-    setOtp(text);
+    setOtp(text.trim());
   };
 
   // Handle input field error messages
@@ -98,6 +99,7 @@ const VerifyOTPScreen = ({route}: Props) => {
         otp: otp,
       });
       if (result.data.token) {
+        showToast();
         otpErrorMessageType('OTP verified successfully');
         storeToken(result.data.token);
         handleNavigateToHome();
@@ -118,13 +120,17 @@ const VerifyOTPScreen = ({route}: Props) => {
         emailPhone: emailPhone.toLocaleLowerCase(),
         otp: otp,
       });
-      if (result.data) {
+      if (result.status === 200) {
+        showToast();
         otpErrorMessageType('OTP verified successfully');
-        storeToken(result.data.token);
+        storeToken(result.token);
         handleNavigateToHome();
         return true;
-      } else if (result.status !== 200) {
-        otpErrorMessageType('Invalid OTP!');
+      } else if (result.status === 404) {
+        otpErrorMessageType('Wrong OTP!');
+        setOtpErrorMessageVisible(true);
+      } else if (result.status === 400) {
+        otpErrorMessageType('OTP expired!');
         setOtpErrorMessageVisible(true);
       }
     } catch (error) {
@@ -141,14 +147,17 @@ const VerifyOTPScreen = ({route}: Props) => {
         emailPhone: emailPhone.toLocaleLowerCase(),
         otp: otp,
       });
-      if (result.data) {
+      if (result.status === 200) {
         otpErrorMessageType('OTP verified successfully');
         navigation.navigate('SetPass', {
           EmailPhone: emailPhone,
         } as any);
         return true;
-      } else if (result.status !== 200) {
-        otpErrorMessageType('Invalid OTP!');
+      } else if (result.status === 404) {
+        otpErrorMessageType('Wrong OTP!');
+        setOtpErrorMessageVisible(true);
+      } else if (result.status === 400) {
+        otpErrorMessageType('OTP expired!');
         setOtpErrorMessageVisible(true);
       }
     } catch (error) {
@@ -177,6 +186,14 @@ const VerifyOTPScreen = ({route}: Props) => {
     // } else {
     //   resetUserPassword();
     // }
+  };
+
+  // Toast
+  const showToast = () => {
+    Toast.show({
+      type: 'success',
+      text1: 'OTP verified successfully',
+    });
   };
 
   return (
@@ -328,7 +345,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 40,
     borderRadius: 15,
-    opacity: 50,
     ...(Platform.OS === 'ios'
       ? {
           shadowColor: '#000',

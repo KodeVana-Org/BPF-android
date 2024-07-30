@@ -8,8 +8,14 @@ import {
   SplashScreen,
   NotificationScreen,
   EditBannerScreen,
-  EditMemberScreen,
+  EditUsersScreen,
+  EditUserDataScreen,
   UploadPostScreen,
+  UploadGalleryScreen,
+  ConferenceStreamScreen,
+  ViewPostScreen,
+  JoinScreen,
+  DonateScreen,
 } from '../screens';
 import {AppContext} from './AppContext';
 
@@ -20,9 +26,13 @@ export type RootStackParamList = {
   Join: undefined;
   Donate: undefined;
   Notification: undefined;
-  EditMember: undefined;
+  EditUsers: undefined;
+  EditUserData: undefined;
   EditBanner: undefined;
   UploadPost: undefined;
+  UploadGallery: undefined;
+  ConferenceStream: undefined;
+  ViewPost: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -59,8 +69,17 @@ const RootNavigator = () => {
       )}
       <Stack.Screen name="Notification" component={NotificationScreen} />
       <Stack.Screen name="EditBanner" component={EditBannerScreen} />
-      <Stack.Screen name="EditMember" component={EditMemberScreen} />
+      <Stack.Screen name="EditUsers" component={EditUsersScreen} />
+      <Stack.Screen name="EditUserData" component={EditUserDataScreen} />
       <Stack.Screen name="UploadPost" component={UploadPostScreen} />
+      <Stack.Screen name="UploadGallery" component={UploadGalleryScreen} />
+      <Stack.Screen
+        name="ConferenceStream"
+        component={ConferenceStreamScreen}
+      />
+      <Stack.Screen name="ViewPost" component={ViewPostScreen} />
+      <Stack.Screen name="Join" component={JoinScreen} />
+      <Stack.Screen name="Donate" component={DonateScreen} />
     </Stack.Navigator>
   );
 };

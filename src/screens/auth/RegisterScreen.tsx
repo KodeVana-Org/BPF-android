@@ -11,7 +11,7 @@ import {
   ScrollView,
   Image,
 } from 'react-native';
-import {user_register} from '../../api/auth_api';
+import {user_register} from '../../api/auth_apis';
 import LinearGradient from 'react-native-linear-gradient';
 import ChevronLeftLight from '../../assets/icons/ChevronLeftLight';
 import {useNavigation} from '@react-navigation/native';
@@ -47,10 +47,10 @@ const RegisterScreen = () => {
   const [emailPhone, setEmailPhone] = useState('');
   const [password, setPassword] = useState('');
   const handleEmailPhoneInputChange = (text: string) => {
-    setEmailPhone(text);
+    setEmailPhone(text.trim());
   };
   const handlePasswordInputChange = (text: string) => {
-    setPassword(text);
+    setPassword(text.trim());
   };
 
   // Handle input field error messages
@@ -99,13 +99,13 @@ const RegisterScreen = () => {
       const result = await user_register({
         emailPhone: emailPhone.toLocaleLowerCase(),
       });
-      if (result.data) {
+      if (result.status === 200) {
         navigation.navigate('VerifyOTP', {
           EmailPhone: emailPhone,
           Password: password,
           Purpose: 'register',
         } as any);
-      } else if (result.status !== 200) {
+      } else if (result.status === 403) {
         emailPhoneErrorMessageType('User already exist!');
         setEmailPhoneErrorMessageVisible(true);
       }
@@ -273,7 +273,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 30,
     borderRadius: 15,
-    opacity: 50,
     ...(Platform.OS === 'ios'
       ? {
           shadowColor: '#000',

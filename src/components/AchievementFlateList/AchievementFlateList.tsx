@@ -7,7 +7,7 @@ import {
   Dimensions,
   Text,
 } from 'react-native';
-import {get_achievements} from '../../api/app_data_api';
+import {get_achievements} from '../../api/app_data_apis';
 
 const {width} = Dimensions.get('window');
 
@@ -38,6 +38,7 @@ const AchievementFlateList = () => {
         horizontal={false}
         showsHorizontalScrollIndicator={false}
         keyExtractor={(item, index) => index.toString()}
+        initialNumToRender={3}
         renderItem={({item}) => (
           <View style={styles.achievementContainer}>
             <Image source={{uri: item.photo[0]}} style={styles.image} />
@@ -66,11 +67,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 10,
     borderWidth: 0.2,
-    width: width - 40,
+    width: width - 20,
   },
   image: {
-    width: '100%',
-    height: 300,
+    width: width - 40,
+    height: width - 40,
     borderRadius: 7,
   },
   title: {

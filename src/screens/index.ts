@@ -10,6 +10,7 @@ export {default as SetPassScreen} from './auth/SetPasswordScreen';
 export {default as HomeScreen} from './bottomTab/HomeScreen';
 export {default as PostsScreen} from './bottomTab/PostScreen';
 export {default as VideosScreen} from './bottomTab/VideoScreen';
+export {default as ConferenceLobbyScreen} from './bottomTab/ConferenceLobbyScreen';
 
 ////////////////////** DRAWER SCREENS **////////////////////
 export {default as ProfileScreen} from './drawer/ProfileScreen';
@@ -17,16 +18,24 @@ export {default as HistoryScreen} from './drawer/BTCHistoryScreen';
 export {default as CommitteeScreen} from './drawer/CommitteeScreen';
 export {default as AchievementScreen} from './drawer/AchievementScreen';
 export {default as ConstitutionScreen} from './drawer/ConstitutionScreen';
-export {default as SixthSheduleScreen} from './drawer/SixthSheduleScreen';
-export {default as VissionScreen} from './drawer/VissionScreen';
+export {default as SixthScheduleScreen} from './drawer/SixthScheduleScreen';
+export {default as VisionScreen} from './drawer/VisionScreen';
 export {default as GalleryScreen} from './drawer/GalleryScreen';
 export {default as AboutScreen} from './drawer/AboutScreen';
 
 ////////////////////** OUTER SCREENS **////////////////////
 export {default as SplashScreen} from './SplashScreen';
 export {default as NotificationScreen} from './NotificationScreen';
+export {default as DonateScreen} from './DonateScreen';
+export {default as JoinScreen} from './JoinScreen';
 
-////////////////////** OUTER SCREENS **////////////////////
+////////////////////** ADMIN ACCESS SCREENS **////////////////////
 export {default as EditBannerScreen} from './admin/EditBannerScreen';
-export {default as EditMemberScreen} from './admin/EditMemberScreen';
+export {default as EditUsersScreen} from './admin/EditUsersScreen';
 export {default as UploadPostScreen} from './admin/UploadPostScreen';
+export {default as UploadGalleryScreen} from './admin/UploadGalleryScreen';
+export {default as EditUserDataScreen} from './admin/EditUserDataScreen';
+
+////////////////////** MODEL SCREENS **////////////////////
+export {default as ConferenceStreamScreen} from './models/ConferenceStreamScreen';
+export {default as ViewPostScreen} from './models/ViewPostScreen';
