@@ -74,6 +74,10 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
+    aaptOptions {
+        noCompress = ['.png']
+    }
+
     namespace "com.kodevana.bpf"
     defaultConfig {
         applicationId "com.kodevana.bpf"
