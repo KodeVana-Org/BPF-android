@@ -12,7 +12,7 @@ import {
 import NavHeader from '../components/Header/NavHeader';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import useFetchUserData from '../data/userData';
-import RNUpiPayment from 'react-native-upi-payment';
+// import RNUpiPayment from 'react-native-upi-payment';
 import Modal from 'react-native-modal';
 import Toast from 'react-native-toast-message';
 
@@ -47,17 +47,18 @@ const DonateScreen = () => {
       setAmountEmpty(true);
     }
     if (name !== '' && email !== '' && amount !== '') {
-      RNUpiPayment.initializePayment(
-        {
-          vpa: 'bodolandpeoplesfront@sbi',
-          payeeName: 'Bodoland Peoples Front',
-          transactionNote: 'Donate BPF',
-          amount: amount,
-          transactionRef: 'aasf-332-aoei-fn',
-        },
-        successCallback,
-        failureCallback,
-      );
+    showToast('info', 'UPI payment temporarily disabled.');
+      // RNUpiPayment.initializePayment(
+      //   {
+      //     vpa: 'bodolandpeoplesfront@sbi',
+      //     payeeName: 'Bodoland Peoples Front',
+      //     transactionNote: 'Donate BPF',
+      //     amount: amount,
+      //     transactionRef: 'aasf-332-aoei-fn',
+      //   },
+      //   successCallback,
+      //   failureCallback,
+      // );
     }
   };
   const successCallback = (data: any) => {
