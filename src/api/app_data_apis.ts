@@ -58,3 +58,14 @@ export const get_banners = async (): Promise<any> => {
     return error.response.data;
   }
 };
+
+///////  REMOVE POST /////
+export const remove_post = async (postId: string, userId: string) => {
+  try {
+    const response = await ApiManager.delete(`post/delete-post/${postId}`, {data: {userId: userId}});
+    return response;
+  } catch (error: any) {
+    console.error('Error deleting post:', error.message);
+    return error.response;
+  }
+};

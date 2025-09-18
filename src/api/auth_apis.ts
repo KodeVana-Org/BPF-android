@@ -8,7 +8,7 @@ interface RegisterData {
 export const user_register = async (data: RegisterData): Promise<any> => {
   try {
     const response = await ApiManager.post('user/register', data);
-    return response.data;
+    return response;
   } catch (error: any) {
     console.error('Error occurred during user registration:', error.message);
     return error.response.data;
