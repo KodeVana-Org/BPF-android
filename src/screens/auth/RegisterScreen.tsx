@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import {user_register} from '../../api/auth_apis';
 import LinearGradient from 'react-native-linear-gradient';
@@ -30,7 +31,7 @@ const windowHeight = Dimensions.get('window').height;
 
 const RegisterScreen = () => {
   const navigation = useNavigation<StackNavigationProp<AuthParamList>>();
-
+    const [isLoading, setIsLoading] = useState(false)
   // Handle hide password
   const [hidePassword, setHidePassword] = useState(true);
   const toggleHidePassword = () => {
@@ -68,30 +69,36 @@ const RegisterScreen = () => {
   };
 
   // Handle form data validation
-  const handlesendOTPButton = async () => {
-    const emailPhoneValidationResult = validateEmailPhone(emailPhone);
-    const passwordValidationResult = validatePassword(password);
-    if (
-      emailPhoneValidationResult?.success &&
-      passwordValidationResult?.success
-    ) {
-      passUserData();
-    }
-    if (!emailPhoneValidationResult?.success) {
-      emailPhoneErrorMessageType(emailPhoneValidationResult?.message || '');
-      setEmailPhoneErrorMessageVisible(true);
-    } else {
-      emailPhoneErrorMessageType(emailPhoneValidationResult?.message || '');
-      setEmailPhoneErrorMessageVisible(false);
-    }
-    if (!passwordValidationResult?.success) {
-      passwordErrorMessageType(passwordValidationResult?.message || '');
-      setPasswordErrorMessageVisible(true);
-    } else {
-      passwordErrorMessageType(passwordValidationResult?.message || '');
-      setPasswordErrorMessageVisible(false);
-    }
-  };
+const handlesendOTPButton = async () => {
+  setIsLoading(true);
+
+  const emailPhoneValidationResult = validateEmailPhone(emailPhone);
+  const passwordValidationResult = validatePassword(password);
+
+  if (
+    emailPhoneValidationResult?.success &&
+    passwordValidationResult?.success
+  ) {
+    await passUserData(); // ✅ Await the async call
+  }
+
+  // Show validation errors
+  if (!emailPhoneValidationResult?.success) {
+    emailPhoneErrorMessageType(emailPhoneValidationResult?.message || '');
+    setEmailPhoneErrorMessageVisible(true);
+  } else {
+    setEmailPhoneErrorMessageVisible(false);
+  }
+
+  if (!passwordValidationResult?.success) {
+    passwordErrorMessageType(passwordValidationResult?.message || '');
+    setPasswordErrorMessageVisible(true);
+  } else {
+    setPasswordErrorMessageVisible(false);
+  }
+
+  setIsLoading(false); // ✅ Now it executes after everything finishes
+};
 
   // Pass user data to the server
   const passUserData = async () => {
@@ -105,7 +112,7 @@ const RegisterScreen = () => {
           Password: password,
           Purpose: 'register',
         } as any);
-      } else if (result.status === 403) {
+      } else if (result.status === "403") {
         emailPhoneErrorMessageType('User already exist!');
         setEmailPhoneErrorMessageVisible(true);
       }
@@ -179,11 +186,17 @@ const RegisterScreen = () => {
             ) : null}
           </View>
           <View style={styles.sendOTPContainer}>
-            <TouchableOpacity
-              style={styles.sendOTP}
-              onPress={handlesendOTPButton}>
-              <Text style={styles.sendOTPLebel}>Send OTP</Text>
-            </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.sendOTP, isLoading && {opacity: 0.6}]}
+          onPress={handlesendOTPButton}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+              <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.sendOTPLebel}>Send OTP</Text>
+          )}
+        </TouchableOpacity>
           </View>
           <View style={styles.loginContainer}>
             <Text style={styles.loginBtnLebel}>Already have an account?</Text>

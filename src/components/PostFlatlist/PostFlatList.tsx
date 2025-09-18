@@ -7,11 +7,15 @@ import {
   StyleSheet,
   Dimensions,
   Pressable,
+  ActivityIndicator,
+  TouchableOpacity,
 } from 'react-native';
-import {get_posts} from '../../api/app_data_apis';
+import {get_posts, remove_post} from '../../api/app_data_apis';
 import {useNavigation} from '@react-navigation/native';
 import {ModelsParamList} from '../../navigator/ModelNavigator';
 import {StackNavigationProp} from '@react-navigation/stack';
+import useFetchUserData from '../../data/userData';
+import Toast from 'react-native-toast-message';
 
 const {width} = Dimensions.get('window');
 
@@ -23,7 +27,9 @@ const PostFlatList = ({
   marginType?: 'bottom' | 'right';
 }) => {
   const [posts, setPosts] = useState([]);
+  const [isLoading, setIsLoading] = useState<string | null>(null);
   const navigation = useNavigation<StackNavigationProp<ModelsParamList>>();
+  const {admin, postAdmin, myServerId} = useFetchUserData();
   // console.log(navigation);
 
   useEffect(() => {
@@ -51,10 +57,42 @@ const PostFlatList = ({
     }
   };
 
+
+const handleRemovePost = async (postId: string) => {
+    setIsLoading(postId);
+    try {
+      const result = await remove_post(postId,myServerId);
+      if (result.status === 200) {
+        setPosts(prev => prev.filter(post => post.id !== postId));
+        Toast.show({
+            type:"success",
+            text1:"post deleted sucessfully",
+            text2:"The post was deleted sucessfully"
+        })
+      } else {
+        Toast.show({
+            type:"error",
+            text1:"deletion failed",
+            text2:"Unable to delete post",
+        })
+        console.warn('Failed to remove post');
+      }
+    } catch (error) {
+        Toast.show({
+            type:"error",
+            text1:"Network error",
+            text2:"Please check your internet connection",
+        })
+      console.error('Error removing post:', error);
+    } finally {
+      setIsLoading(null);
+    }
+  };
+
   // Filter posts if marginType is 'right'
   const filteredPosts = marginType === 'right' ? posts.slice(0, 5) : posts;
 
-  return (
+ return (
     <View style={[styles.container, calculateMargin()]}>
       <FlatList
         data={filteredPosts}
@@ -70,6 +108,19 @@ const PostFlatList = ({
             onPress={() => navigation.navigate('ViewPost', {postId: item.id})}>
             <Image source={{uri: item.postImages}} style={styles.image} />
             <Text style={styles.text}>{item.postComment}</Text>
+
+            {(admin || postAdmin) && (
+              <TouchableOpacity
+                style={styles.removeButton}
+                onPress={() => handleRemovePost(item.id)}
+                disabled={isLoading === item.id}>
+                {isLoading === item.id ? (
+                  <ActivityIndicator color="#fff" size="small" />
+                ) : (
+                  <Text style={styles.removeButtonText}>Remove</Text>
+                )}
+              </TouchableOpacity>
+            )}
           </Pressable>
         )}
       />
@@ -78,6 +129,19 @@ const PostFlatList = ({
 };
 
 const styles = StyleSheet.create({
+
+removeButton: {
+  marginTop: 10,
+  backgroundColor: 'red',
+  paddingHorizontal: 16,
+  paddingVertical: 8,
+  borderRadius: 6,
+  alignItems: 'center',
+},
+removeButtonText: {
+  color: '#fff',
+  fontWeight: 'bold',
+},
   container: {
     flex: 1,
     gap: 10,

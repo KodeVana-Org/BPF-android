@@ -197,6 +197,10 @@ function CustomDrawer(props: any) {
             onPress={() => {
               AsyncStorage.removeItem('AccessToken');
               setNavigateToHome(false);
+              navigationJD.reset({
+                  index: 0,
+                  routes: [{name: 'Login'}],
+                });
             }}>
             <Text style={styles.logoutText}>Logout</Text>
             <LogoutIcon />

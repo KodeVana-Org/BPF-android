@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import ChevronLeftLight from '../../assets/icons/ChevronLeftLight';
@@ -19,6 +20,7 @@ import {AuthParamList} from '../../navigator/AuthNavigator';
 import {AppContext} from '../../navigator/AppContext';
 import {user_login_otp} from '../../api/auth_apis';
 import {validateEmailPhone} from '../../validation/validateInputDetails';
+import Toast from 'react-native-toast-message';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -26,6 +28,7 @@ const windowHeight = Dimensions.get('window').height;
 const LoginOtpScreen = () => {
   const navigation = useNavigation<StackNavigationProp<AuthParamList>>();
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
   /// Handle navigation to HomeScreen
   const {setNavigateToHome} = useContext(AppContext);
   const handleSkipButton = () => {
@@ -48,6 +51,7 @@ const LoginOtpScreen = () => {
 
   // Handle form data validation
   const handlesendOTPButton = async () => {
+    setIsSubmitting(true)
     const emailPhoneValidationResult = validateEmailPhone(emailPhone);
     if (emailPhoneValidationResult?.success) {
       passUserData();
@@ -67,14 +71,19 @@ const LoginOtpScreen = () => {
       const result = await user_login_otp({
         emailPhone: emailPhone.toLocaleLowerCase(),
       });
+            console.log("rs: ", result)
       if (result.status === 200) {
+            Toast.show({
+                type:"success",
+                text1:"OTP send successfully"
+            })
         navigation.navigate('VerifyOTP', {
           EmailPhone: emailPhone,
           Password: '',
           Purpose: 'login',
         } as any);
       } else if (result.status === 404) {
-        emailPhoneErrorMessageType('Wrong input details!');
+        emailPhoneErrorMessageType('user not found!');
         setEmailPhoneErrorMessageVisible(true);
       } else if (result.status === 500) {
         emailPhoneErrorMessageType('Please try again!');
@@ -82,7 +91,9 @@ const LoginOtpScreen = () => {
       }
     } catch (error) {
       console.error('Error logging user:', error);
-    }
+    } finally {
+        setIsSubmitting(false)
+      }
   };
 
   return (
@@ -123,13 +134,18 @@ const LoginOtpScreen = () => {
               </Text>
             ) : null}
           </View>
-          <View style={styles.sendOTPContainer}>
-            <TouchableOpacity
-              style={styles.sendOTP}
-              onPress={handlesendOTPButton}>
+        <View style={styles.sendOTPContainer}>
+          <TouchableOpacity
+            style={[styles.sendOTP, isSubmitting && {opacity: isSubmitting ? 0.6 : 1}]}
+            onPress={handlesendOTPButton}
+            disabled={isSubmitting}>
+            {isSubmitting ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
               <Text style={styles.sendOTPLebel}>Send OTP</Text>
-            </TouchableOpacity>
-          </View>
+            )}
+          </TouchableOpacity>
+        </View>
           <View style={styles.registerContainer}>
             <Text style={styles.registerBtnLebel}>Don't have an account? </Text>
             <Pressable style={styles.registerBtn}>

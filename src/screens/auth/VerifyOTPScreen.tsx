@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React, {useContext, useState, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import ChevronLeftLight from '../../assets/icons/ChevronLeftLight';
@@ -41,7 +42,9 @@ interface Props {
 
 const VerifyOTPScreen = ({route}: Props) => {
   const navigation = useNavigation<StackNavigationProp<AuthParamList>>();
-
+  const [secondsRemaining, setSecondsRemaining] = useState(9); // 1:59 = 119 seconds
+  const [isTimerRunning, setIsTimerRunning] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   /// Handle navigation to HomeScreen
   const {setNavigateToHome} = useContext(AppContext);
   const handleNavigateToHome = () => {
@@ -90,8 +93,10 @@ const VerifyOTPScreen = ({route}: Props) => {
     }
   };
 
+
   // Pass => register user data to the server
   const RegisterUser = async () => {
+    setIsSubmitting(true)
     try {
       const result = await verify_register_otp({
         emailPhone: emailPhone.toLocaleLowerCase(),
@@ -99,8 +104,12 @@ const VerifyOTPScreen = ({route}: Props) => {
         otp: otp,
       });
       if (result.data.token) {
-        showToast();
-        otpErrorMessageType('OTP verified successfully');
+        Toast.show
+            ({
+                type:"succes",
+                text1:"User logged successfully"
+            })
+        otpErrorMessageType('User Registerd successfully');
         storeToken(result.data.token);
         handleNavigateToHome();
       } else if (result.status !== 200) {
@@ -110,26 +119,34 @@ const VerifyOTPScreen = ({route}: Props) => {
     } catch (error) {
       console.error('Error verifying OTP:', error);
       console.error(error);
-    }
+    } finally {
+        setIsSubmitting(false)
+     }
   };
 
   // Pass => login user data to the server
   const LoginUser = async () => {
+    setIsSubmitting(true)
     try {
       const result = await verify_login_otp({
         emailPhone: emailPhone.toLocaleLowerCase(),
         otp: otp,
       });
+            console.log("res]result", result)
       if (result.status === 200) {
-        showToast();
+        Toast.show
+            ({
+                type:"success",
+                text1:"logined successfully"
+            })
         otpErrorMessageType('OTP verified successfully');
         storeToken(result.token);
         handleNavigateToHome();
         return true;
-      } else if (result.status === 404) {
-        otpErrorMessageType('Wrong OTP!');
-        setOtpErrorMessageVisible(true);
       } else if (result.status === 400) {
+        otpErrorMessageType('Invalid OTP!');
+        setOtpErrorMessageVisible(true);
+      } else if (result.status === 410) {
         otpErrorMessageType('OTP expired!');
         setOtpErrorMessageVisible(true);
       }
@@ -137,11 +154,15 @@ const VerifyOTPScreen = ({route}: Props) => {
       console.error('Error verifying OTP:', error);
       console.error(error);
       return false;
-    }
+    } finally {
+        setIsSubmitting(false)
+      }
   };
 
   // Pass => reset password user data
   const resetUserPassword = async () => {
+
+    setIsSubmitting(true)
     try {
       const result = await forgot_pass_otp({
         emailPhone: emailPhone.toLocaleLowerCase(),
@@ -164,7 +185,9 @@ const VerifyOTPScreen = ({route}: Props) => {
       console.error('Error verifying OTP:', error);
       console.error(error);
       return false;
-    }
+    } finally {
+        setIsSubmitting(false)
+      }
   };
 
   // Store user login token
@@ -178,6 +201,10 @@ const VerifyOTPScreen = ({route}: Props) => {
 
   // Handle resend otp button
   const handleResendOtpButton = () => {
+      // setSecondsRemaining(119);
+      setSecondsRemaining(9);
+      setIsTimerRunning(true);
+        console.log("yesh")
     // TODO: Activate the button if the timer is over and when user clicks on the button sesend another OTP and disable the button again for the defined amount of time;
     // if (purpose === 'register') {
     //   RegisterUser();
@@ -188,6 +215,7 @@ const VerifyOTPScreen = ({route}: Props) => {
     // }
   };
 
+
   // Toast
   const showToast = () => {
     Toast.show({
@@ -195,6 +223,32 @@ const VerifyOTPScreen = ({route}: Props) => {
       text1: 'OTP verified successfully',
     });
   };
+
+//helper function for timing
+const formatTime = (totalSeconds: number): string => {
+  const minutes = Math.floor(totalSeconds / 60)
+    .toString()
+    .padStart(2, '0');
+  const seconds = (totalSeconds % 60).toString().padStart(2, '0');
+  return `${minutes} : ${seconds}`;
+};
+
+//for timing
+useEffect(() => {
+  let timer: NodeJS.Timeout;
+
+  if (isTimerRunning && secondsRemaining > 0) {
+    timer = setInterval(() => {
+      setSecondsRemaining(prev => prev - 1);
+    }, 1000);
+  } else if (secondsRemaining === 0) {
+    setIsTimerRunning(false);
+  }
+
+  return () => clearInterval(timer); // Cleanup interval on unmount
+}, [isTimerRunning, secondsRemaining]);
+
+
 
   return (
     <ScrollView scrollEnabled={true} showsVerticalScrollIndicator={false}>
@@ -245,26 +299,42 @@ const VerifyOTPScreen = ({route}: Props) => {
               </Text>
             ) : null}
           </View>
-          <View style={styles.resendOtpBtnContainer}>
-            <Pressable
-              style={styles.resendOtpBtn}
-              disabled={true}
-              onPress={handleResendOtpButton}>
-              {/* TODO: Change color to '#000' if the button is active and change to gray id the button is disabled */}
-              <Text style={[styles.resendOtpLebel, {color: 'gray'}]}>
-                Resend OTP
-              </Text>
-            </Pressable>
-            {/* TODO: Change color to green if the timer is running and change to 'gray' if timer has stoppped */}
-            <Text style={[styles.resendOtpTimer, {color: 'green'}]}>
-              01 : 59
+        <View style={styles.resendOtpBtnContainer}>
+          <Pressable
+            style={styles.resendOtpBtn}
+            disabled={secondsRemaining > 0}
+            onPress={handleResendOtpButton}>
+            <Text
+              style={[
+                styles.resendOtpLebel,
+                {
+                  color: secondsRemaining > 0 ? 'gray' : 'blue',
+                  textDecorationLine: secondsRemaining > 0 ? 'none' : 'underline',
+                },
+              ]}>
+              Resend OTP
             </Text>
-          </View>
+          </Pressable>
+
+          <Text
+            style={[
+              styles.resendOtpTimer,
+              {color: secondsRemaining > 0 ? 'green' : 'gray'},
+            ]}>
+            {formatTime(secondsRemaining)}
+          </Text>
+        </View>
           <View style={styles.submitBtnContainer}>
             <TouchableOpacity
-              style={styles.submitBtn}
-              onPress={handleSubmitButton}>
-              <Text style={styles.submitBtnLebel}>Submit</Text>
+              style={[styles.submitBtn, isSubmitting && {opacity: isSubmitting ? 0.6 : 1}]}
+              onPress={handleSubmitButton}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.submitBtnLebel}>Submit</Text>
+              )}
             </TouchableOpacity>
           </View>
         </View>
