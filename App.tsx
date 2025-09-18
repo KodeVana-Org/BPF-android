@@ -4,6 +4,7 @@ import RootNavigator from './src/navigator/RootNavigator';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {AppContextProvider} from './src/navigator/AppContext';
 import InternetConnectionAlert from './src/components/Toast/InternetConnectionAlert';
+import Toast from 'react-native-toast-message';
 
 const App = () => {
   return (
@@ -14,6 +15,7 @@ const App = () => {
           <InternetConnectionAlert />
           <RootNavigator />
         </NavigationContainer>
+        <Toast />
       </AppContextProvider>
     </SafeAreaProvider>
   );
