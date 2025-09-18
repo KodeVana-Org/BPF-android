@@ -26,8 +26,9 @@ const UploadPostScreen = () => {
   const [postTitle, setPostTitle] = useState('');
   const [placeholder, setPlaceholder] = useState('Enter post title*');
   const [inputFieldColor, setInputFieldColor] = useState('gray');
+  const [isUploading, setIsUploading] = useState(false)
   const userData = useFetchUserData();
-  const userID = userData.id;
+  const userID = userData.myServerId
 
   // Handle saving post title
   const handlePostTitleInputChange = (text: string) => {
@@ -52,7 +53,14 @@ const UploadPostScreen = () => {
       setPlaceholder('Title is required!');
       setInputFieldColor('red');
       return;
-    } else {
+    }
+    setIsUploading(true)
+    Toast.show({
+        type:"info",
+        text1: "Uploading..",
+        autoHide:false
+    })
+
       const formData = new FormData();
       formData.append('postImage', {
         uri: postImageUrl,
@@ -61,42 +69,43 @@ const UploadPostScreen = () => {
       });
       formData.append('postTitle', postTitle);
       formData.append('userId', userID);
+      console.log("userID", userID)
       try {
         const result = await ApiManager.post('post/create-post', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
         });
+            console.log("resutl: ", result)
         if (result.status === 200) {
-          showToast();
-          console.log('Post uploaded successfully!');
+          Toast.hide();
+          Toast.show({
+              type:"success",
+              text1:"Post uplaoded successfully"
+          })
+           setPostTitle("")
           setPostImageUrl(null);
           setImageSelectionMessage('Post uploaded seccessfully!');
         } else {
-          console.log('Post not uploaded, please try again!');
+            Toast.hide()
+            Toast.show({
+                type:"error",
+                text1:"uplaod failed",
+                text2:"check your network and try again",
+            })
         }
       } catch (error) {
-        for (let i = 1; i < 3; i++) {
-          if (postImageUrl != null) {
-            const retryResult = await ApiManager.post(
-              'post/create-post',
-              formData,
-              {
-                headers: {
-                  'Content-Type': 'multipart/form-data',
-                },
-              },
-            );
-            if (retryResult.status === 200) {
-              console.log('Post uploaded successfully!');
-              setPostImageUrl(null);
-              setImageSelectionMessage('Post uploaded seccessfully!');
-              break;
-            }
-          }
+        Toast.hide();
+        Toast.show({
+          type: 'error',
+          text1: 'Upload failed',
+          text2: 'Check your network and try again.',
+        });
+        console.error("Error while creating post");
+      } finally {
+           setIsUploading(false)
         }
-      }
-    }
+
   };
 
   // Handle upload cancellation
@@ -113,13 +122,6 @@ const UploadPostScreen = () => {
     }, 2000);
   }, []);
 
-  // Toast
-  const showToast = () => {
-    Toast.show({
-      type: 'success',
-      text1: 'Post uploaded successfully',
-    });
-  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -150,11 +152,19 @@ const UploadPostScreen = () => {
             <View style={styles.buttonContainer}>
               {postImageUrl ? (
                 <View style={styles.buttonContainer}>
-                  <TouchableOpacity
-                    style={[styles.formButton, styles.uploadButton]}
-                    onPress={uploadPost}>
-                    <Text style={styles.buttonText}>Upload</Text>
-                  </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.formButton,
+                    styles.uploadButton,
+                    { opacity: isUploading ? 0.5 : 1 },
+                  ]}
+                  onPress={uploadPost}
+                  disabled={isUploading} // disable while uploading
+                >
+                  <Text style={styles.buttonText}>
+                    {isUploading ? 'Uploading...' : 'Upload'}
+                  </Text>
+                </TouchableOpacity>
                   <TouchableOpacity
                     style={[styles.formButton, styles.cancelButton]}
                     onPress={cancelUpload}>

@@ -26,6 +26,7 @@ export default function EditBannerScreen() {
   const [uploadBannerMessage, setUploadBannerMessage] =
     useState('Upload new banner');
   const [removingBannerId, setRemovingBannerId] = useState(null);
+  const [uploading, setUploadLoading] = useState(false)
 
   // Select photo from library
   const openImagePicker = () => {
@@ -47,53 +48,42 @@ export default function EditBannerScreen() {
 
   // Pass banner to the server
   // TODO: potential issue retried to upload in catch block
-  const uploadBanner = async () => {
-    const formData = new FormData();
-    formData.append('image', {
-      uri: postImageUrl,
-      type: 'image/jpeg',
-      name: 'bannerImage.jpg',
+
+const uploadBanner = async () => {
+  if (!postImageUrl) return;
+
+  const formData = new FormData();
+  formData.append('image', {
+    uri: postImageUrl,
+    type: 'image/jpeg',
+    name: 'bannerImage.jpg',
+  });
+  try {
+    setUploadLoading(true)
+    const result = await ApiManager.post('api/upload-hero', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
     });
-    try {
-      const result = await ApiManager.post('api/upload-hero', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      if (result.status === 200) {
-        console.log('Banner uploaded successfully!');
-        setPostImageUrl(null);
-        setShowUploadDialog(false);
-        setUploadBannerMessage('Banner uploaded successfully!');
-        fetchBanners();
-      } else {
-        console.log('Banner not uploaded, please try again!');
-      }
-    } catch (error) {
-      for (let i = 1; i < 3; i++) {
-        if (postImageUrl != null) {
-          const retryResult = await ApiManager.post(
-            'api/upload-hero',
-            formData,
-            {
-              headers: {
-                'Content-Type': 'multipart/form-data',
-              },
-            },
-          );
-          if (retryResult.status === 200) {
-            console.log('Banner uploaded successfully!');
-            showToast();
-            setPostImageUrl(null);
-            setShowUploadDialog(false);
-            setUploadBannerMessage('Banner uploaded successfully!');
-            fetchBanners();
-            break;
-          }
-        }
-      }
+
+    if (result.status === 200) {
+      showToast('success', 'Banner uploaded successfully!');
+      setPostImageUrl(null);
+      setShowUploadDialog(false);
+      setUploadBannerMessage('Banner uploaded successfully!');
+      fetchBanners();
+    } else {
+      // console.warn('Upload failed with status:', result.status);
+      showToast('error', 'Banner not uploaded. Please try again.');
     }
-  };
+  } catch (error) {
+    setUploadLoading(false)
+    console.error('Error uploading banner:', error);
+    showToast('error', 'Something went wrong. Try again later.');
+  } finally {
+      setUploadLoading(false)
+    }
+};
 
     const handleRemoveBanner = async(item: string) => {
         const id =  item._id
@@ -146,12 +136,12 @@ export default function EditBannerScreen() {
   }, []);
 
   // Toast
-  const showToast = () => {
-    Toast.show({
-      type: 'success',
-      text1: 'Banner uploaded successfully',
-    });
-  };
+const showToast = (type = 'success', text = '') => {
+  Toast.show({
+    type,
+    text1: text,
+  });
+};
 
   return (
     <SafeAreaProvider style={styles.container}>
@@ -169,11 +159,21 @@ export default function EditBannerScreen() {
             <View style={styles.formContainer}>
               <Image source={{uri: postImageUrl}} style={styles.postImage} />
               <View style={styles.buttonContainer}>
-                <TouchableOpacity
-                  style={[styles.formButton, styles.uploadButton]}
-                  onPress={uploadBanner}>
-                  <Text style={styles.buttonText}>Upload</Text>
-                </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.formButton,
+                styles.uploadButton,
+                uploading && styles.disabledButton,
+              ]}
+              onPress={uploadBanner}
+              disabled={uploading}
+            >
+              {uploading ? (
+                <ActivityIndicator color="#fff" size="small" />
+              ) : (
+                <Text style={styles.buttonText}>Upload</Text>
+              )}
+            </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.formButton, styles.cancelButton]}
                   onPress={cancelUpload}>
@@ -245,9 +245,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-    disabledButton: {
-      opacity: 0.6,
-    },
+disabledButton: {
+  opacity: 0.6,
+},
+
 removeButton: {
   position: 'absolute',
   top: 10,
