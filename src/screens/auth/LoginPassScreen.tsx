@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import ChevronLeftLight from '../../assets/icons/ChevronLeftLight';
@@ -32,6 +33,7 @@ const windowHeight = Dimensions.get('window').height;
 
 const LoginPassScreen = () => {
   const navigation = useNavigation<StackNavigationProp<AuthParamList>>();
+    const [isLoading, setIsLoading] = useState(false)
 
   // Handle hide password
   const [hidePassword, setHidePassword] = useState(true);
@@ -70,30 +72,42 @@ const LoginPassScreen = () => {
     useState(false);
 
   // Handle form data validation
-  const handleLoginButton = async () => {
-    const emailPhoneValidationResult = validateEmailPhone(emailPhone);
-    const passwordValidationResult = validatePassword(password);
-    if (
-      emailPhoneValidationResult?.success &&
-      passwordValidationResult?.success
-    ) {
-      passUserData();
+const handleLoginButton = async () => {
+  const emailPhoneValidationResult = validateEmailPhone(emailPhone);
+  const passwordValidationResult = validatePassword(password);
+
+  // Show validation messages
+  if (!emailPhoneValidationResult?.success) {
+    emailPhoneErrorMessageType(emailPhoneValidationResult?.message || '');
+    setEmailPhoneErrorMessageVisible(true);
+  } else {
+    emailPhoneErrorMessageType('');
+    setEmailPhoneErrorMessageVisible(false);
+  }
+
+  if (!passwordValidationResult?.success) {
+    passwordErrorMessageType(passwordValidationResult?.message || '');
+    setPasswordErrorMessageVisible(true);
+  } else {
+    passwordErrorMessageType('');
+    setPasswordErrorMessageVisible(false);
+  }
+
+  // If both are valid, proceed
+  if (
+    emailPhoneValidationResult?.success &&
+    passwordValidationResult?.success
+  ) {
+    try {
+      setIsLoading(true);           // Start spinner and disable button
+      await passUserData();         // Your login API call
+    } catch (error) {
+      console.error('Login failed:', error);
+    } finally {
+      setIsLoading(false);          // Re-enable button after done
     }
-    if (!emailPhoneValidationResult?.success) {
-      emailPhoneErrorMessageType(emailPhoneValidationResult?.message || '');
-      setEmailPhoneErrorMessageVisible(true);
-    } else {
-      emailPhoneErrorMessageType(emailPhoneValidationResult?.message || '');
-      setEmailPhoneErrorMessageVisible(false);
-    }
-    if (!passwordValidationResult?.success) {
-      passwordErrorMessageType(passwordValidationResult?.message || '');
-      setPasswordErrorMessageVisible(true);
-    } else {
-      passwordErrorMessageType(passwordValidationResult?.message || '');
-      setPasswordErrorMessageVisible(false);
-    }
-  };
+  }
+};
 
   /// Pass user data to the server
   const passUserData = async () => {
@@ -210,13 +224,19 @@ const LoginPassScreen = () => {
             onPress={() => navigation.navigate('ForgotPass')}>
             <Text style={styles.forgotPassLebel}>Forgot Password?</Text>
           </Pressable>
-          <View style={styles.loginBtnContainer}>
-            <TouchableOpacity
-              style={styles.loginBtn}
-              onPress={handleLoginButton}>
-              <Text style={styles.loginBtnLebel}>Login</Text>
-            </TouchableOpacity>
-          </View>
+            <View style={styles.loginBtnContainer}>
+              <TouchableOpacity
+                style={[styles.loginBtn, isLoading && styles.disabledButton]}
+                onPress={handleLoginButton}
+                disabled={isLoading}>
+
+                {isLoading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.loginBtnLebel}>Login</Text>
+                )}
+              </TouchableOpacity>
+            </View>
           <View style={styles.registerContainer}>
             <Text style={styles.registerBtnLebel}>Don't have an account? </Text>
             <Pressable style={styles.registerBtn}>
@@ -247,6 +267,10 @@ const LoginPassScreen = () => {
 export default LoginPassScreen;
 
 const styles = StyleSheet.create({
+
+    disabledButton: {
+      opacity: 0.6,
+    },
   container: {
     height: windowHeight,
     flex: 1,
