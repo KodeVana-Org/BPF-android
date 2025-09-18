@@ -9,12 +9,14 @@ import {
   Dimensions,
   Animated,
   RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import NavHeader from '../../components/Header/NavHeader';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import ImagePicker from 'react-native-image-crop-picker';
 import {get_banners} from '../../api/app_data_apis';
+import { removeBanner } from '../../api/auth_apis';
 import ApiManager from '../../api/ApiManager';
 import Toast from 'react-native-toast-message';
 
@@ -23,6 +25,7 @@ export default function EditBannerScreen() {
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [uploadBannerMessage, setUploadBannerMessage] =
     useState('Upload new banner');
+  const [removingBannerId, setRemovingBannerId] = useState(null);
 
   // Select photo from library
   const openImagePicker = () => {
@@ -91,6 +94,28 @@ export default function EditBannerScreen() {
       }
     }
   };
+
+    const handleRemoveBanner = async(item: string) => {
+        const id =  item._id
+        try {
+        setRemovingBannerId(id)
+        const result = await removeBanner(id);
+
+        if (result?.status === 200) {
+            setGetBanners(prev => prev.filter(banner => banner._id !== id));
+              Toast.show({
+                type: 'success',
+                text1: 'Banner deleted successfully',
+              });
+        } else {
+             console.warn('Failed to remove banner:', result?.data?.message || 'Unknown error');}
+        } catch (error) {
+           console.error('Unexpected error removing banner:', error);
+        } finally {
+            setRemovingBannerId(null);
+        }
+    }
+
 
   // fetch banner
   const [getBanners, setGetBanners] = useState([]);
@@ -190,6 +215,21 @@ export default function EditBannerScreen() {
                     source={{uri: item.ImageUrl}}
                     style={styles.bannerImage}
                   />
+                  {/* 🛑 Remove Button Overlaid on Image */}
+            <TouchableOpacity
+              style={[
+                styles.removeButton,
+                removingBannerId === item._id && styles.disabledButton
+              ]}
+              onPress={() => handleRemoveBanner(item)}
+              disabled={removingBannerId === item._id}
+            >
+              {removingBannerId === item._id ? (
+                <ActivityIndicator color="#fff" size="small" />
+              ) : (
+                <Text style={styles.removeButtonText}>Remove</Text>
+              )}
+            </TouchableOpacity>
                 </View>
               )}
             />
@@ -204,6 +244,25 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+
+    disabledButton: {
+      opacity: 0.6,
+    },
+removeButton: {
+  position: 'absolute',
+  top: 10,
+  right: 10,
+  backgroundColor: 'rgba(255, 0, 0, 0.8)',
+  paddingVertical: 7,
+  paddingHorizontal: 9,
+  borderRadius: 5,
+},
+
+removeButtonText: {
+  color: '#fff',
+  fontWeight: 'bold',
+  fontSize: 12,
+},
   editBannerContainer: {
     marginTop: 10,
     paddingTop: 10,

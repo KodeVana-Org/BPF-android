@@ -183,3 +183,13 @@ export const get_single_user = async (data: UserData): Promise<any> => {
     return error.response.data;
   }
 };
+
+export const removeBanner = async (userId : string): Promise<any> => {
+  try {
+    const response = await ApiManager.delete(`api/delete-hero/${userId}`);
+    return response;
+  } catch (error: any) {
+    console.log('Error occurred deleting banner :', error.message);
+    return error.response.data;
+  }
+};
