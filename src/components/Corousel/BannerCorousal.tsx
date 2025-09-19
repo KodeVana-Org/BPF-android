@@ -1,34 +1,47 @@
 import React, {useEffect, useState} from 'react';
-import {Dimensions, Image, View, StyleSheet} from 'react-native';
+import {Dimensions, Image, View, StyleSheet, ActivityIndicator} from 'react-native';
 import Carousel from 'react-native-reanimated-carousel';
 import {get_banners} from '../../api/app_data_apis';
+import {useQuery, useQueryClient} from '@tanstack/react-query';
 
 function BannerCarousal() {
   const width = Dimensions.get('window').width;
   const [activeIndex, setActiveIndex] = useState(0);
-  const [bannerImages, setBannerImages] = useState([]);
 
-  useEffect(() => {
-    const fetchBanners = async () => {
-      try {
-        const response = await get_banners();
-        if (response.data) {
-          const reversedImages = response.data.image.reverse();
-          setBannerImages(reversedImages.slice(0, 6));
-        } else {
-          console.error('Banners data not found in response:', response);
-        }
-      } catch (error) {
-        console.error('Error fetching banners:', error);
-      }
-    };
+  // ✅ React Query for fetching banners
+  const {
+    data: bannerData,
+    isLoading: isBannerLoading,
+    isError,
+  } = useQuery({
+    queryKey: ['banner'],
+    queryFn: get_banners,
+  });
 
-    fetchBanners();
-  }, []);
+  // ✅ Extract and reverse banners
+  const bannerImages = bannerData?.data?.image
+    ? [...bannerData.data.image].reverse().slice(0, 6)
+    : [];
 
+  if (isBannerLoading) {
+    return (
+      <View style={{height: 200, justifyContent: 'center', alignItems: 'center'}}>
+        <ActivityIndicator size="large" color="gray" />
+      </View>
+    );
+  }
+
+  if (isError || bannerImages.length === 0) {
+    return (
+      <View style={{height: 200, justifyContent: 'center', alignItems: 'center'}}>
+        <Text style={{color: 'red'}}>Failed to load banners</Text>
+      </View>
+    );
+  }
   const handleSnapToItem = index => {
     setActiveIndex(index);
   };
+
 
   return (
     <View style={{flex: 1}}>

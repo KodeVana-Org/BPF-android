@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState} from 'react';
 import {
   FlatList,
   View,
@@ -16,6 +16,7 @@ import {ModelsParamList} from '../../navigator/ModelNavigator';
 import {StackNavigationProp} from '@react-navigation/stack';
 import useFetchUserData from '../../data/userData';
 import Toast from 'react-native-toast-message';
+import {useQuery, useQueryClient} from '@tanstack/react-query';
 
 const {width} = Dimensions.get('window');
 
@@ -26,28 +27,23 @@ const PostFlatList = ({
   horizontal: boolean;
   marginType?: 'bottom' | 'right';
 }) => {
-  const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState<string | null>(null);
   const navigation = useNavigation<StackNavigationProp<ModelsParamList>>();
   const {admin, postAdmin, myServerId} = useFetchUserData();
-  // console.log(navigation);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const response = await get_posts();
-        if (response && response.posts) {
-          setPosts(response.posts);
-        } else {
-          console.error('Posts data not found in response:', response);
-        }
-      } catch (error) {
-        console.error('Error fetching posts:', error);
-      }
-    };
+  // ✅ React Query for fetching posts
+    const {
+      data: postData,
+      isLoading: isPostsLoading,
+      isError,
+    } = useQuery({
+      queryKey: ['posts'],
+      queryFn: get_posts,
+    });
 
-    fetchPosts();
-  }, []);
+  const posts = postData?.posts || [];
+  const filteredPosts = marginType === 'right' ? posts.slice(0, 5) : posts;
 
   const calculateMargin = () => {
     if (marginType === 'bottom') {
@@ -57,42 +53,55 @@ const PostFlatList = ({
     }
   };
 
-
-const handleRemovePost = async (postId: string) => {
+  const handleRemovePost = async (postId: string) => {
     setIsLoading(postId);
     try {
-      const result = await remove_post(postId,myServerId);
+      const result = await remove_post(postId, myServerId);
       if (result.status === 200) {
-        setPosts(prev => prev.filter(post => post.id !== postId));
         Toast.show({
-            type:"success",
-            text1:"post deleted sucessfully",
-            text2:"The post was deleted sucessfully"
-        })
+          type: 'success',
+          text1: 'Post deleted successfully',
+          text2: 'The post was deleted successfully',
+        });
+
+        // ✅ Refetch posts after deletion
+        queryClient.invalidateQueries(['posts']);
       } else {
         Toast.show({
-            type:"error",
-            text1:"deletion failed",
-            text2:"Unable to delete post",
-        })
-        console.warn('Failed to remove post');
+          type: 'error',
+          text1: 'Deletion failed',
+          text2: 'Unable to delete post',
+        });
       }
     } catch (error) {
-        Toast.show({
-            type:"error",
-            text1:"Network error",
-            text2:"Please check your internet connection",
-        })
+      Toast.show({
+        type: 'error',
+        text1: 'Network error',
+        text2: 'Please check your internet connection',
+      });
       console.error('Error removing post:', error);
     } finally {
       setIsLoading(null);
     }
   };
 
-  // Filter posts if marginType is 'right'
-  const filteredPosts = marginType === 'right' ? posts.slice(0, 5) : posts;
+  if (isPostsLoading) {
+    return (
+      <View style={{alignItems: 'center', justifyContent: 'center'}}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
 
- return (
+  if (isError) {
+    return (
+      <View style={{alignItems: 'center', justifyContent: 'center'}}>
+        <Text>Error loading posts.</Text>
+      </View>
+    );
+  }
+
+  return (
     <View style={[styles.container, calculateMargin()]}>
       <FlatList
         data={filteredPosts}

@@ -69,3 +69,23 @@ export const remove_post = async (postId: string, userId: string) => {
     return error.response;
   }
 };
+
+// create_post
+export const create_post = async (formData: FormData) => {
+  const response = await ApiManager.post('post/create-post', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};
+
+// create_post
+export const create_banner = async (formData: FormData) => {
+  const response = await ApiManager.post('api/upload-hero', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};

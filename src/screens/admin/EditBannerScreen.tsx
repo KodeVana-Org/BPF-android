@@ -11,11 +11,12 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import NavHeader from '../../components/Header/NavHeader';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import ImagePicker from 'react-native-image-crop-picker';
-import {get_banners} from '../../api/app_data_apis';
+import {create_banner, get_banners} from '../../api/app_data_apis';
 import { removeBanner } from '../../api/auth_apis';
 import ApiManager from '../../api/ApiManager';
 import Toast from 'react-native-toast-message';
@@ -23,10 +24,76 @@ import Toast from 'react-native-toast-message';
 export default function EditBannerScreen() {
   const [postImageUrl, setPostImageUrl] = useState(null);
   const [showUploadDialog, setShowUploadDialog] = useState(false);
+  const [isUploading, setIsUploading] = useState(false)
   const [uploadBannerMessage, setUploadBannerMessage] =
     useState('Upload new banner');
   const [removingBannerId, setRemovingBannerId] = useState(null);
-  const [uploading, setUploadLoading] = useState(false)
+
+const queryClient = useQueryClient();
+
+const {
+  data: bannerData,
+  isLoading: isBannerLoading,
+  isError,
+} = useQuery({
+  queryKey: ['banner'],
+  queryFn: get_banners,
+});
+
+const banners = bannerData?.data?.image?.slice()?.reverse() || [];
+
+  // Toast
+const showToast = (type = 'success', text = '') => {
+  Toast.show({
+    type,
+    text1: text,
+  });
+};
+
+const { mutate: createBanner, isPending: isCreating } = useMutation({
+  mutationFn: create_banner,
+  onSuccess: () => {
+    Toast.hide();
+    Toast.show({
+      type: 'success',
+      text1: 'Banner uploaded successfully',
+    });
+
+    // Reset form state
+    setPostImageUrl(null);
+    setShowUploadDialog(false);
+    setUploadBannerMessage('Banner uploaded successfully!');
+
+    // Refetch posts
+    queryClient.invalidateQueries({ queryKey: ['banner'] });
+  },
+  onError: () => {
+    Toast.hide();
+    Toast.show({
+      type: 'error',
+      text1: 'Upload failed',
+      text2: 'Check your network and try again.',
+    });
+    console.error('Upload error:', isError);
+    showToast('error', 'Something went wrong. Try again later.');
+  },
+});
+
+
+const removeBannerMutation = useMutation({
+  mutationFn: (id: string) => removeBanner(id),
+  onSuccess: (_, id) => {
+    queryClient.invalidateQueries({ queryKey: ['banner'] });
+    Toast.show({
+      type: 'success',
+      text1: 'Banner deleted successfully',
+    });
+  },
+  onError: (error) => {
+    console.error('Unexpected error removing banner:', error);
+    showToast('error', 'Banner deletion failed');
+  },
+});
 
   // Select photo from library
   const openImagePicker = () => {
@@ -46,102 +113,56 @@ export default function EditBannerScreen() {
     setShowUploadDialog(false);
   };
 
-  // Pass banner to the server
-  // TODO: potential issue retried to upload in catch block
 
 const uploadBanner = async () => {
   if (!postImageUrl) return;
 
+  setIsUploading(true);
+
+  const uri = postImageUrl.startsWith('file://') ? postImageUrl : `file://${postImageUrl}`;
+
+  console.log("Uploading URI:", uri); // ✅ Check this
+
   const formData = new FormData();
   formData.append('image', {
-    uri: postImageUrl,
+    uri,
     type: 'image/jpeg',
     name: 'bannerImage.jpg',
   });
-  try {
-    setUploadLoading(true)
-    const result = await ApiManager.post('api/upload-hero', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
 
-    if (result.status === 200) {
-      showToast('success', 'Banner uploaded successfully!');
-      setPostImageUrl(null);
-      setShowUploadDialog(false);
-      setUploadBannerMessage('Banner uploaded successfully!');
-      fetchBanners();
-    } else {
-      // console.warn('Upload failed with status:', result.status);
-      showToast('error', 'Banner not uploaded. Please try again.');
-    }
-  } catch (error) {
-    setUploadLoading(false)
-    console.error('Error uploading banner:', error);
-    showToast('error', 'Something went wrong. Try again later.');
+  try {
+    await createBanner(formData);
+  } catch (err) {
+    console.log("Upload error:", err?.response || err);
   } finally {
-      setUploadLoading(false)
-    }
+    setIsUploading(false);
+  }
 };
 
-    const handleRemoveBanner = async(item: string) => {
-        const id =  item._id
-        try {
-        setRemovingBannerId(id)
-        const result = await removeBanner(id);
-
-        if (result?.status === 200) {
-            setGetBanners(prev => prev.filter(banner => banner._id !== id));
-              Toast.show({
-                type: 'success',
-                text1: 'Banner deleted successfully',
-              });
-        } else {
-             console.warn('Failed to remove banner:', result?.data?.message || 'Unknown error');}
-        } catch (error) {
-           console.error('Unexpected error removing banner:', error);
-        } finally {
-            setRemovingBannerId(null);
-        }
-    }
-
-
-  // fetch banner
-  const [getBanners, setGetBanners] = useState([]);
-  const fetchBanners = async () => {
-    try {
-      const response = await get_banners();
-      if (response.data) {
-        setGetBanners(response.data.image.reverse());
-      } else {
-        console.error('Banners data not found in response:', response);
-      }
-    } catch (error) {
-      console.error('Error fetching banners:', error);
-    }
-  };
-  useEffect(() => {
-    fetchBanners();
-  }, []);
-
-  // Refresh control
-  const [refreshing, setRefreshing] = React.useState(false);
-  const onRefresh = React.useCallback(() => {
-    setRefreshing(true);
-    fetchBanners();
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 2000);
-  }, []);
-
-  // Toast
-const showToast = (type = 'success', text = '') => {
-  Toast.show({
-    type,
-    text1: text,
+const handleRemoveBanner = (item: any) => {
+  const id = item._id;
+  setRemovingBannerId(id);
+  removeBannerMutation.mutate(id, {
+    onSettled: () => setRemovingBannerId(null),
   });
 };
+
+  // Refresh control
+const [refreshing, setRefreshing] = React.useState(false);
+const onRefresh = useCallback(async () => {
+  setRefreshing(true);
+  await queryClient.invalidateQueries({ queryKey: ['banner'] });
+  setRefreshing(false);
+}, [queryClient]);
+
+if (isBannerLoading) {
+  return <ActivityIndicator />;
+}
+
+if (isError) {
+  return <Text>Error loading banners</Text>;
+}
+
 
   return (
     <SafeAreaProvider style={styles.container}>
@@ -163,12 +184,12 @@ const showToast = (type = 'success', text = '') => {
               style={[
                 styles.formButton,
                 styles.uploadButton,
-                uploading && styles.disabledButton,
+                isCreating && styles.disabledButton,
               ]}
               onPress={uploadBanner}
-              disabled={uploading}
+              disabled={isCreating}
             >
-              {uploading ? (
+              {isCreating ? (
                 <ActivityIndicator color="#fff" size="small" />
               ) : (
                 <Text style={styles.buttonText}>Upload</Text>
@@ -198,7 +219,7 @@ const showToast = (type = 'success', text = '') => {
           {/* Display current banner images */}
           <View style={styles.bannerContainer}>
             <FlatList
-              data={getBanners}
+              data={banners}
               horizontal={false}
               showsVerticalScrollIndicator={false}
               keyExtractor={(item, index) => index.toString()}
