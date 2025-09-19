@@ -18,8 +18,9 @@ import {SafeAreaProvider} from 'react-native-safe-area-context';
 import ImagePicker from 'react-native-image-crop-picker';
 import {create_banner, get_banners} from '../../api/app_data_apis';
 import { removeBanner } from '../../api/auth_apis';
-import ApiManager from '../../api/ApiManager';
 import Toast from 'react-native-toast-message';
+import LoadingSkeleton from '../../components/Loading/LoadingSkeliton';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function EditBannerScreen() {
   const [postImageUrl, setPostImageUrl] = useState(null);
@@ -156,9 +157,14 @@ const onRefresh = useCallback(async () => {
 }, [queryClient]);
 
 if (isBannerLoading) {
-  return <ActivityIndicator />;
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#000" />
+      </View>
+    </SafeAreaView>
+  );
 }
-
 if (isError) {
   return <Text>Error loading banners</Text>;
 }
@@ -262,6 +268,13 @@ if (isError) {
 }
 
 const styles = StyleSheet.create({
+
+loadingContainer: {
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+  backgroundColor: '#fff', // optional for visibility
+},
   container: {
     flex: 1,
   },
