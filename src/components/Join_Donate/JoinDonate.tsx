@@ -31,16 +31,37 @@ const JoinDonate = () => {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity
-        onPress={handleJoinPress}
-        style={[styles.button, styles.JoinButton]}>
-        <Text style={styles.buttonText}>Join BPF</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        onPress={handleDonatePress}
-        style={[styles.button, styles.DonateButton]}>
-        <Text style={styles.buttonText}>Donate us</Text>
-      </TouchableOpacity>
+        {userData.userType === 'member' ? (
+          <TouchableOpacity style={[styles.button, styles.JoinButton, { opacity: 0.6 }]}>
+            <Text style={styles.buttonText}>Member</Text>
+          </TouchableOpacity>
+        ) : userData.userType === 'superAdmin' ? (
+          <TouchableOpacity style={[styles.button, styles.JoinButton, { opacity: 0.6 }]}>
+          </TouchableOpacity>
+        ) : userData.userType === 'joined' ? (
+          <TouchableOpacity style={[styles.button, styles.JoinButton, { opacity: 0.6 }]}>
+            <Text style={styles.buttonText}>Joined</Text>
+          </TouchableOpacity>
+        ) : userData.userType==="admin" ? (
+          <TouchableOpacity onPress={handleJoinPress} style={[styles.button, styles.JoinButton]}>
+            <Text style={styles.buttonText}>Admin</Text>
+          </TouchableOpacity>
+        ): (
+          <TouchableOpacity onPress={handleJoinPress} style={[styles.button, styles.JoinButton]}>
+            <Text style={styles.buttonText}>Join BPF</Text>
+          </TouchableOpacity>)
+        }
+
+        {
+            userData.userType !=="superAdmin" ? (
+                <TouchableOpacity
+                    onPress={handleDonatePress}
+                    style={[styles.button, styles.DonateButton]}>
+                    <Text style={styles.buttonText}>Donate us</Text>
+                </TouchableOpacity>
+            ): null
+        }
+
     </View>
   );
 };

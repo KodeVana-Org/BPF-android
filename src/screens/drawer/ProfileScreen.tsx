@@ -75,7 +75,6 @@ const updateUserMutation = useMutation({
   },
 });
 
-    console.log("DATA: ", userData)
 
   useEffect(() => {
     const fetchUserData = async () => {
