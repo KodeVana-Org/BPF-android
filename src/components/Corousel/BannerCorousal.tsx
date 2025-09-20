@@ -3,6 +3,7 @@ import {Dimensions, Image, View, StyleSheet, ActivityIndicator} from 'react-nati
 import Carousel from 'react-native-reanimated-carousel';
 import {get_banners} from '../../api/app_data_apis';
 import {useQuery, useQueryClient} from '@tanstack/react-query';
+import { _Text } from 'react-native';
 
 function BannerCarousal() {
   const width = Dimensions.get('window').width;

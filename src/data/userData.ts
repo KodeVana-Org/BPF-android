@@ -1,87 +1,49 @@
-import {useEffect, useState} from 'react';
-import {verify_Token} from '../api/auth_apis';
+import { useQuery } from '@tanstack/react-query';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { verify_Token } from '../api/auth_apis';
 
 const useFetchUserData = () => {
-  const [userData, setUserData] = useState({});
-  const [superAdmin, setSuperAdmin] = useState(false);
-  const [admin, setAdmin] = useState(false);
-  const [postAdmin, setPostAdmin] = useState(false);
-  const [member, setMember] = useState(false);
-  const [conferenceAccess, setConferenceAccess] = useState(false);
-  const [myId, setMyId] = useState('');
-  const [myServerId, setMyServerId] = useState('');
+  const {
+    data: userData = {}, // fallback to empty object
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ['userProfile'],
+    queryFn: async () => {
+      const accessToken = await AsyncStorage.getItem('AccessToken');
+      if (!accessToken) throw new Error('No access token found');
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const accessToken = await AsyncStorage.getItem('AccessToken');
-        if (accessToken) {
-          const response = await verify_Token({
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          });
-          setUserData(response.data);
-        }
-      } catch (error) {
-        console.error('Error fetching userData:', error);
-      }
-    };
-    setTimeout(() => {
-      fetchUserData();
-    }, 100);
-  }, []);
+      const response = await verify_Token({
+        Authorization: `Bearer ${accessToken}`,
+      });
 
-  // Check user type
-  useEffect(() => {
-    setMyId(userData.userId);
-    setMyServerId(userData.id);
-    if (userData.userType) {
-      if (userData.userType === 'superAdmin') {
-        setSuperAdmin(true);
-        setAdmin(true);
-        setPostAdmin(true);
-        setMember(true);
-        setConferenceAccess(true);
-      } else if (userData.userType === 'admin') {
-        setSuperAdmin(false);
-        setAdmin(true);
-        setPostAdmin(true);
-        setMember(true);
-        setConferenceAccess(true);
-      } else if (userData.userType === 'post-admin') {
-        setSuperAdmin(false);
-        setAdmin(false);
-        setPostAdmin(true);
-        setMember(true);
-        setConferenceAccess(false);
-      } else if (userData.userType === 'member') {
-        setSuperAdmin(false);
-        setAdmin(false);
-        setPostAdmin(false);
-        setMember(true);
-        setConferenceAccess(true);
-      } else {
-        setSuperAdmin(false);
-        setAdmin(false);
-        setPostAdmin(false);
-        setMember(false);
-        setConferenceAccess(false);
-      }
-    }
-  }, [userData]);
+      return response?.data || {};
+    },
+    staleTime: 1000 * 60 * 5, // 5 mins
+    cacheTime: 1000 * 60 * 10,
+  });
+
+  // Set access levels based on userType
+  const userType = userData?.userType;
+  const superAdmin = userType === 'superAdmin';
+  const admin = superAdmin || userType === 'admin';
+  const postAdmin = admin || userType === 'post-admin';
+  const member = postAdmin || userType === 'member';
+  const conferenceAccess = superAdmin || admin || userType === 'member';
 
   return {
     userData,
+    isLoading,
+    error,
     superAdmin,
     admin,
     postAdmin,
     member,
     conferenceAccess,
-    myId,
-    myServerId,
+    myId: userData?.userId,
+    myServerId: userData?.id,
   };
 };
 
 export default useFetchUserData;
+

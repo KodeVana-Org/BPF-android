@@ -89,3 +89,23 @@ export const create_banner = async (formData: FormData) => {
   });
   return response.data;
 };
+
+// update-user
+export const update_user_details = async (userId, data) => {
+    const response = await ApiManager.post(`user/update-details/${userId}`, data);
+    return response.data;
+};
+
+// update-profile pic
+export const update_user_profile = async (userId, data) => {
+  const response = await ApiManager.post(
+    `user/update-profile/${userId}`,
+    data,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }
+  );
+  return response.data;
+};

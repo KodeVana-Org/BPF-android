@@ -148,13 +148,13 @@ interface VerifyTokenData {
   headers: any;
 }
 
-export const verify_Token = async (data: VerifyTokenData): Promise<any> => {
+export const verify_Token = async (headers: object): Promise<any> => {
   try {
-    const response = await ApiManager.get('user/auth', data);
+    const response = await ApiManager.get('user/auth', { headers });
     return response.data;
   } catch (error: any) {
     console.log('Error occurred accessing user details:', error.message);
-    return error.response.data;
+    throw error.response?.data || error; // Important: Throw so React Query can catch
   }
 };
 
