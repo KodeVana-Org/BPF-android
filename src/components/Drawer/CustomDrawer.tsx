@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useQueryClient } from '@tanstack/react-query';
 import LinearGradient from 'react-native-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {AppContext} from '../../navigator/AppContext';
@@ -31,6 +32,7 @@ function CustomDrawer(props: any) {
   const drawerNavigation =
     useNavigation<StackNavigationProp<DrawerParamList>>();
   const {userData} = useFetchUserData();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -192,19 +194,26 @@ function CustomDrawer(props: any) {
       </View>
       {token ? (
         <View style={styles.bottomContainer}>
-          <TouchableOpacity
-            style={styles.navItemContainer}
-            onPress={() => {
-              AsyncStorage.removeItem('AccessToken');
-              setNavigateToHome(false);
-              navigationJD.reset({
-                  index: 0,
-                  routes: [{name: 'Login'}],
-                });
-            }}>
-            <Text style={styles.logoutText}>Logout</Text>
-            <LogoutIcon />
-          </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.navItemContainer}
+          onPress={async () => {
+            // 1. Clear stored token
+            await AsyncStorage.removeItem('AccessToken');
+
+            // 2. Clear React Query cache
+            queryClient.clear();
+
+            // 3. Reset navigation and state
+            setNavigateToHome(false);
+            navigationJD.reset({
+              index: 0,
+              routes: [{ name: 'Login' }],
+            });
+          }}
+        >
+          <Text style={styles.logoutText}>Logout</Text>
+          <LogoutIcon />
+        </TouchableOpacity>
         </View>
       ) : (
         <View style={styles.bottomContainer}>

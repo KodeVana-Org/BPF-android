@@ -293,7 +293,7 @@ const handleProfileImageChange = async () => {
 
             { userData?.dist ? (
                 <View style={styles.dataContainer}>
-                  <Text style={styles.dataLabel}>Distic : </Text>
+                  <Text style={styles.dataLabel}>Distick : </Text>
                   <Text style={styles.userData}>{userData?.dist}</Text>
                 </View>
                  ) :null
