@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
+import {useQuery} from '@tanstack/react-query';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { verify_Token } from '../api/auth_apis';
+import {verify_Token} from '../api/auth_apis';
 
 const useFetchUserData = () => {
   const {
@@ -46,4 +46,3 @@ const useFetchUserData = () => {
 };
 
 export default useFetchUserData;
-

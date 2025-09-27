@@ -1,5 +1,6 @@
 /* eslint-disable react/react-in-jsx-scope */
 import {DrawerContentScrollView} from '@react-navigation/drawer';
+import {asyncStoragePersister} from '../../../App';
 import {
   ActivityIndicator,
   Dimensions,
@@ -206,15 +207,16 @@ function CustomDrawer(props: any) {
               try {
                 // 1. Clear stored token
                 await AsyncStorage.removeItem('AccessToken');
-
+                await queryClient.removeQueries({queryKey: ['userProfile']});
                 // 2. Clear React Query cache
-                queryClient.clear();
+                await queryClient.clear();
+                await asyncStoragePersister.removeClient();
 
                 // 3. Reset navigation and state
                 setNavigateToHome(false);
                 navigationJD.reset({
                   index: 0,
-                  routes: [{name: 'Login'}],
+                  routes: [{name: 'AuthNavigator'}],
                 });
               } catch (error) {
                 Toast.show({
