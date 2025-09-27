@@ -17,7 +17,7 @@ import NavHeader from '../../components/Header/NavHeader';
 import ApiManager from '../../api/ApiManager';
 import useFetchUserData from '../../data/userData';
 import Toast from 'react-native-toast-message';
-import { create_post } from '../../api/app_data_apis';
+import {create_post} from '../../api/app_data_apis';
 import {useMutation, useQueryClient} from '@tanstack/react-query';
 
 const UploadPostScreen = () => {
@@ -28,38 +28,38 @@ const UploadPostScreen = () => {
   const [postTitle, setPostTitle] = useState('');
   const [placeholder, setPlaceholder] = useState('Enter post title*');
   const [inputFieldColor, setInputFieldColor] = useState('gray');
-  const [isUploading, setIsUploading] = useState(false)
+  const [isUploading, setIsUploading] = useState(false);
   const userData = useFetchUserData();
-  const userID = userData.myServerId
+  const userID = userData.myServerId;
 
-const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-const { mutate: createPost, isPending: isCreating } = useMutation({
-  mutationFn: create_post,
-  onSuccess: () => {
-    Toast.hide();
-    Toast.show({
-      type: 'success',
-      text1: 'Post uploaded successfully',
-    });
+  const {mutate: createPost, isPending: isCreating} = useMutation({
+    mutationFn: create_post,
+    onSuccess: () => {
+      Toast.hide();
+      Toast.show({
+        type: 'success',
+        text1: 'Post uploaded successfully',
+      });
 
-    // Reset form state
-    setPostTitle('');
-    setPostImageUrl(null);
-    setImageSelectionMessage('Post uploaded successfully!');
+      // Reset form state
+      setPostTitle('');
+      setPostImageUrl(null);
+      setImageSelectionMessage('Post uploaded successfully!');
 
-    // Refetch posts
-    queryClient.invalidateQueries({ queryKey: ['posts'] });
-  },
-  onError: () => {
-    Toast.hide();
-    Toast.show({
-      type: 'error',
-      text1: 'Upload failed',
-      text2: 'Check your network and try again.',
-    });
-  },
-});
+      // Refetch posts
+      queryClient.invalidateQueries({queryKey: ['posts']});
+    },
+    onError: () => {
+      Toast.hide();
+      Toast.show({
+        type: 'error',
+        text1: 'Upload failed',
+        text2: 'Check your network and try again.',
+      });
+    },
+  });
   // Handle saving post title
   const handlePostTitleInputChange = (text: string) => {
     setPostTitle(text.trim());
@@ -69,39 +69,39 @@ const { mutate: createPost, isPending: isCreating } = useMutation({
   // Select photo from library
   const openImagePicker = () => {
     ImagePicker.openPicker({
-      width: 300,
-      height: 300,
       cropping: true,
+      compressImageQuality: 1,
+      mediaType: 'photo',
     }).then(image => {
       setPostImageUrl(image.path);
     });
   };
 
-// Handle upload post
-const handleCreatePost = () => {
-  if (postTitle === '') {
-    setPlaceholder('Title is required!');
-    setInputFieldColor('red');
-    return;
-  }
+  // Handle upload post
+  const handleCreatePost = () => {
+    if (postTitle === '') {
+      setPlaceholder('Title is required!');
+      setInputFieldColor('red');
+      return;
+    }
 
-  Toast.show({
-    type: 'info',
-    text1: 'Uploading...',
-    autoHide: false,
-  });
+    Toast.show({
+      type: 'info',
+      text1: 'Uploading...',
+      autoHide: false,
+    });
 
-  const formData = new FormData();
-  formData.append('postImage', {
-    uri: postImageUrl,
-    type: 'image/jpeg',
-    name: 'postImage.jpg',
-  });
-  formData.append('postTitle', postTitle);
-  formData.append('userId', userID);
+    const formData = new FormData();
+    formData.append('postImage', {
+      uri: postImageUrl,
+      type: 'image/jpeg',
+      name: 'postImage.jpg',
+    });
+    formData.append('postTitle', postTitle);
+    formData.append('userId', userID);
 
-  createPost(formData);
-};
+    createPost(formData);
+  };
 
   // Handle upload cancellation
   const cancelUpload = () => {
@@ -116,7 +116,6 @@ const handleCreatePost = () => {
       setRefreshing(false);
     }, 2000);
   }, []);
-
 
   return (
     <SafeAreaView style={styles.container}>
@@ -147,19 +146,19 @@ const handleCreatePost = () => {
             <View style={styles.buttonContainer}>
               {postImageUrl ? (
                 <View style={styles.buttonContainer}>
-                <TouchableOpacity
-                  style={[
-                    styles.formButton,
-                    styles.uploadButton,
-                    { opacity: isUploading ? 0.5 : 1 },
-                  ]}
-                  onPress={handleCreatePost}
-                  disabled={isCreating} // disable while uploading
-                >
-                  <Text style={styles.buttonText}>
-                    {isCreating ? 'Uploading...' : 'Upload'}
-                  </Text>
-                </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.formButton,
+                      styles.uploadButton,
+                      {opacity: isUploading ? 0.5 : 1},
+                    ]}
+                    onPress={handleCreatePost}
+                    disabled={isCreating} // disable while uploading
+                  >
+                    <Text style={styles.buttonText}>
+                      {isCreating ? 'Uploading...' : 'Upload'}
+                    </Text>
+                  </TouchableOpacity>
                   <TouchableOpacity
                     style={[styles.formButton, styles.cancelButton]}
                     onPress={cancelUpload}>
