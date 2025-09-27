@@ -31,7 +31,7 @@ const windowHeight = Dimensions.get('window').height;
 
 const RegisterScreen = () => {
   const navigation = useNavigation<StackNavigationProp<AuthParamList>>();
-    const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
   // Handle hide password
   const [hidePassword, setHidePassword] = useState(true);
   const toggleHidePassword = () => {
@@ -49,6 +49,8 @@ const RegisterScreen = () => {
   const [password, setPassword] = useState('');
   const handleEmailPhoneInputChange = (text: string) => {
     setEmailPhone(text.trim());
+    // setEmailPhoneErrorMessageVisible(false); //not working this one
+    setEmailPhoneErrorMessage('');
   };
   const handlePasswordInputChange = (text: string) => {
     setPassword(text.trim());
@@ -62,6 +64,7 @@ const RegisterScreen = () => {
   const [passwordErrorMessageVisible, setPasswordErrorMessageVisible] =
     useState(false);
   const emailPhoneErrorMessageType = (message: string) => {
+    console.log('Setting error message:', message);
     setEmailPhoneErrorMessage(message);
   };
   const passwordErrorMessageType = (message: string) => {
@@ -69,36 +72,50 @@ const RegisterScreen = () => {
   };
 
   // Handle form data validation
-const handlesendOTPButton = async () => {
-  setIsLoading(true);
+  const handlesendOTPButton = async () => {
+    setIsLoading(true);
 
-  const emailPhoneValidationResult = validateEmailPhone(emailPhone);
-  const passwordValidationResult = validatePassword(password);
+    const emailPhoneValidationResult = validateEmailPhone(emailPhone);
+    const passwordValidationResult = validatePassword(password);
 
-  if (
-    emailPhoneValidationResult?.success &&
-    passwordValidationResult?.success
-  ) {
-    await passUserData(); // ✅ Await the async call
-  }
+    if (
+      emailPhoneValidationResult?.success &&
+      passwordValidationResult?.success
+    ) {
+      const result = await passUserData();
+      if (result.status === '200') {
+        navigation.navigate('VerifyOTP', {
+          EmailPhone: emailPhone,
+          Password: password,
+          Purpose: 'register',
+        } as any);
+      } else if (result.status === '403') {
+        console.log('here we go');
+        emailPhoneErrorMessageType(result.message || 'User already exists!');
+        setEmailPhoneErrorMessageVisible(true);
+      } else {
+        emailPhoneErrorMessageType('Server error. Try again.');
+        setEmailPhoneErrorMessageVisible(true);
+      }
+    }
 
-  // Show validation errors
-  if (!emailPhoneValidationResult?.success) {
-    emailPhoneErrorMessageType(emailPhoneValidationResult?.message || '');
-    setEmailPhoneErrorMessageVisible(true);
-  } else {
-    setEmailPhoneErrorMessageVisible(false);
-  }
+    // Show validation errors
+    if (!emailPhoneValidationResult?.success) {
+      emailPhoneErrorMessageType(emailPhoneValidationResult?.message || '');
+      setEmailPhoneErrorMessageVisible(true);
+    } else {
+      setEmailPhoneErrorMessageVisible(false);
+    }
 
-  if (!passwordValidationResult?.success) {
-    passwordErrorMessageType(passwordValidationResult?.message || '');
-    setPasswordErrorMessageVisible(true);
-  } else {
-    setPasswordErrorMessageVisible(false);
-  }
+    if (!passwordValidationResult?.success) {
+      passwordErrorMessageType(passwordValidationResult?.message || '');
+      setPasswordErrorMessageVisible(true);
+    } else {
+      setPasswordErrorMessageVisible(false);
+    }
 
-  setIsLoading(false); // ✅ Now it executes after everything finishes
-};
+    setIsLoading(false); // ✅ Now it executes after everything finishes
+  };
 
   // Pass user data to the server
   const passUserData = async () => {
@@ -106,16 +123,20 @@ const handlesendOTPButton = async () => {
       const result = await user_register({
         emailPhone: emailPhone.toLocaleLowerCase(),
       });
-      if (result.status === 200) {
-        navigation.navigate('VerifyOTP', {
-          EmailPhone: emailPhone,
-          Password: password,
-          Purpose: 'register',
-        } as any);
-      } else if (result.status === "403") {
-        emailPhoneErrorMessageType('User already exist!');
-        setEmailPhoneErrorMessageVisible(true);
-      }
+
+      console.log('result', result);
+      return result;
+      // if (result.status === '200') {
+      //   navigation.navigate('VerifyOTP', {
+      //     EmailPhone: emailPhone,
+      //     Password: password,
+      //     Purpose: 'register',
+      //   } as any);
+      // } else if (result.status === '403') {
+      //   console.log('here i going');
+      //   emailPhoneErrorMessageType('User already exist!');
+      //   setEmailPhoneErrorMessageVisible(true);
+      // }
     } catch (error) {
       console.error('Error registering user:', error);
       console.error(error);
@@ -154,11 +175,9 @@ const handlesendOTPButton = async () => {
               value={emailPhone}
               style={styles.inputField}
             />
-            {emailPhoneErrorMessageVisible ? (
-              <Text style={{color: 'red', marginTop: 5}}>
-                {emailPhoneErrorMessage}
-              </Text>
-            ) : null}
+            <Text style={{color: 'red', fontSize: 12}}>
+              {emailPhoneErrorMessage}
+            </Text>
           </View>
           <View style={styles.inputFieldContainer}>
             <Text style={styles.inputFieldLebel}>Password</Text>
@@ -186,17 +205,16 @@ const handlesendOTPButton = async () => {
             ) : null}
           </View>
           <View style={styles.sendOTPContainer}>
-        <TouchableOpacity
-          style={[styles.sendOTP, isLoading && {opacity: 0.6}]}
-          onPress={handlesendOTPButton}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-              <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.sendOTPLebel}>Send OTP</Text>
-          )}
-        </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.sendOTP, isLoading && {opacity: 0.6}]}
+              onPress={handlesendOTPButton}
+              disabled={isLoading}>
+              {isLoading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.sendOTPLebel}>Send OTP</Text>
+              )}
+            </TouchableOpacity>
           </View>
           <View style={styles.loginContainer}>
             <Text style={styles.loginBtnLebel}>Already have an account?</Text>

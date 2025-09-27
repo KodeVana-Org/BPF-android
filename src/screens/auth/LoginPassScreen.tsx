@@ -118,7 +118,6 @@ const LoginPassScreen = () => {
         emailPhone: emailPhone.toLocaleLowerCase(),
         password: password,
       });
-      console.log('RESULT', result);
       if (result.status === 200) {
         showToast();
         handleNavigateToHome();
