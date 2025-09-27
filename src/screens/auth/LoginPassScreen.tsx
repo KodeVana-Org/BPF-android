@@ -33,7 +33,7 @@ const windowHeight = Dimensions.get('window').height;
 
 const LoginPassScreen = () => {
   const navigation = useNavigation<StackNavigationProp<AuthParamList>>();
-    const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
 
   // Handle hide password
   const [hidePassword, setHidePassword] = useState(true);
@@ -52,8 +52,10 @@ const LoginPassScreen = () => {
   const [password, setPassword] = useState('');
   const handleEmailPhoneInputChange = (text: string) => {
     setEmailPhone(text.trim());
+    setEmailPhoneErrorMessageVisible(false);
   };
   const handlePasswordInputChange = (text: string) => {
+    setPasswordErrorMessageVisible(false);
     setPassword(text.trim());
   };
 
@@ -72,42 +74,42 @@ const LoginPassScreen = () => {
     useState(false);
 
   // Handle form data validation
-const handleLoginButton = async () => {
-  const emailPhoneValidationResult = validateEmailPhone(emailPhone);
-  const passwordValidationResult = validatePassword(password);
+  const handleLoginButton = async () => {
+    const emailPhoneValidationResult = validateEmailPhone(emailPhone);
+    const passwordValidationResult = validatePassword(password);
 
-  // Show validation messages
-  if (!emailPhoneValidationResult?.success) {
-    emailPhoneErrorMessageType(emailPhoneValidationResult?.message || '');
-    setEmailPhoneErrorMessageVisible(true);
-  } else {
-    emailPhoneErrorMessageType('');
-    setEmailPhoneErrorMessageVisible(false);
-  }
-
-  if (!passwordValidationResult?.success) {
-    passwordErrorMessageType(passwordValidationResult?.message || '');
-    setPasswordErrorMessageVisible(true);
-  } else {
-    passwordErrorMessageType('');
-    setPasswordErrorMessageVisible(false);
-  }
-
-  // If both are valid, proceed
-  if (
-    emailPhoneValidationResult?.success &&
-    passwordValidationResult?.success
-  ) {
-    try {
-      setIsLoading(true);           // Start spinner and disable button
-      await passUserData();         // Your login API call
-    } catch (error) {
-      console.error('Login failed:', error);
-    } finally {
-      setIsLoading(false);          // Re-enable button after done
+    // Show validation messages
+    if (!emailPhoneValidationResult?.success) {
+      emailPhoneErrorMessageType(emailPhoneValidationResult?.message || '');
+      setEmailPhoneErrorMessageVisible(true);
+    } else {
+      emailPhoneErrorMessageType('');
+      setEmailPhoneErrorMessageVisible(false);
     }
-  }
-};
+
+    if (!passwordValidationResult?.success) {
+      passwordErrorMessageType(passwordValidationResult?.message || '');
+      setPasswordErrorMessageVisible(true);
+    } else {
+      passwordErrorMessageType('');
+      setPasswordErrorMessageVisible(false);
+    }
+
+    // If both are valid, proceed
+    if (
+      emailPhoneValidationResult?.success &&
+      passwordValidationResult?.success
+    ) {
+      try {
+        setIsLoading(true); // Start spinner and disable button
+        await passUserData(); // Your login API call
+      } catch (error) {
+        console.error('Login failed:', error);
+      } finally {
+        setIsLoading(false); // Re-enable button after done
+      }
+    }
+  };
 
   /// Pass user data to the server
   const passUserData = async () => {
@@ -116,15 +118,16 @@ const handleLoginButton = async () => {
         emailPhone: emailPhone.toLocaleLowerCase(),
         password: password,
       });
+      console.log('RESULT', result);
       if (result.status === 200) {
         showToast();
         handleNavigateToHome();
         storeToken(result.data.token);
-      } else if (result.status === 404) {
-        emailPhoneErrorMessageType('Wrong input details!');
+      } else if (result.status === '404') {
+        emailPhoneErrorMessageType('User not found!');
         setEmailPhoneErrorMessageVisible(true);
-      } else if (result.status === 401) {
-        passwordErrorMessageType('Wrong password!');
+      } else if (result.status === '401') {
+        passwordErrorMessageType('Invalid password!');
         setPasswordErrorMessageVisible(true);
       } else if (result) {
       }
@@ -224,19 +227,18 @@ const handleLoginButton = async () => {
             onPress={() => navigation.navigate('ForgotPass')}>
             <Text style={styles.forgotPassLebel}>Forgot Password?</Text>
           </Pressable>
-            <View style={styles.loginBtnContainer}>
-              <TouchableOpacity
-                style={[styles.loginBtn, isLoading && styles.disabledButton]}
-                onPress={handleLoginButton}
-                disabled={isLoading}>
-
-                {isLoading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.loginBtnLebel}>Login</Text>
-                )}
-              </TouchableOpacity>
-            </View>
+          <View style={styles.loginBtnContainer}>
+            <TouchableOpacity
+              style={[styles.loginBtn, isLoading && styles.disabledButton]}
+              onPress={handleLoginButton}
+              disabled={isLoading}>
+              {isLoading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.loginBtnLebel}>Login</Text>
+              )}
+            </TouchableOpacity>
+          </View>
           <View style={styles.registerContainer}>
             <Text style={styles.registerBtnLebel}>Don't have an account? </Text>
             <Pressable style={styles.registerBtn}>
@@ -267,10 +269,9 @@ const handleLoginButton = async () => {
 export default LoginPassScreen;
 
 const styles = StyleSheet.create({
-
-    disabledButton: {
-      opacity: 0.6,
-    },
+  disabledButton: {
+    opacity: 0.6,
+  },
   container: {
     height: windowHeight,
     flex: 1,

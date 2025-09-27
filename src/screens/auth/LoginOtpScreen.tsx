@@ -51,7 +51,7 @@ const LoginOtpScreen = () => {
 
   // Handle form data validation
   const handlesendOTPButton = async () => {
-    setIsSubmitting(true)
+    setIsSubmitting(true);
     const emailPhoneValidationResult = validateEmailPhone(emailPhone);
     if (emailPhoneValidationResult?.success) {
       passUserData();
@@ -71,12 +71,12 @@ const LoginOtpScreen = () => {
       const result = await user_login_otp({
         emailPhone: emailPhone.toLocaleLowerCase(),
       });
-            console.log("rs: ", result)
+      console.log('rs: ', result);
       if (result.status === 200) {
-            Toast.show({
-                type:"success",
-                text1:"OTP send successfully"
-            })
+        Toast.show({
+          type: 'success',
+          text1: 'OTP send successfully',
+        });
         navigation.navigate('VerifyOTP', {
           EmailPhone: emailPhone,
           Password: '',
@@ -92,8 +92,8 @@ const LoginOtpScreen = () => {
     } catch (error) {
       console.error('Error logging user:', error);
     } finally {
-        setIsSubmitting(false)
-      }
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -134,18 +134,21 @@ const LoginOtpScreen = () => {
               </Text>
             ) : null}
           </View>
-        <View style={styles.sendOTPContainer}>
-          <TouchableOpacity
-            style={[styles.sendOTP, isSubmitting && {opacity: isSubmitting ? 0.6 : 1}]}
-            onPress={handlesendOTPButton}
-            disabled={isSubmitting}>
-            {isSubmitting ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.sendOTPLebel}>Send OTP</Text>
-            )}
-          </TouchableOpacity>
-        </View>
+          <View style={styles.sendOTPContainer}>
+            <TouchableOpacity
+              style={[
+                styles.sendOTP,
+                isSubmitting && {opacity: isSubmitting ? 0.6 : 1},
+              ]}
+              onPress={handlesendOTPButton}
+              disabled={isSubmitting}>
+              {isSubmitting ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.sendOTPLebel}>Send OTP</Text>
+              )}
+            </TouchableOpacity>
+          </View>
           <View style={styles.registerContainer}>
             <Text style={styles.registerBtnLebel}>Don't have an account? </Text>
             <Pressable style={styles.registerBtn}>
