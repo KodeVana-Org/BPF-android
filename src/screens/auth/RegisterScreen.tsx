@@ -32,6 +32,7 @@ const windowHeight = Dimensions.get('window').height;
 const RegisterScreen = () => {
   const navigation = useNavigation<StackNavigationProp<AuthParamList>>();
   const [isLoading, setIsLoading] = useState(false);
+  const [skipLoading, setSkipLoading] = useState(false);
   // Handle hide password
   const [hidePassword, setHidePassword] = useState(true);
   const toggleHidePassword = () => {
@@ -41,6 +42,7 @@ const RegisterScreen = () => {
   /// Handle navigation to HomeScreen
   const {setNavigateToHome} = useContext(AppContext);
   const handleSkipButton = () => {
+    setSkipLoading(true);
     setNavigateToHome(true);
   };
 
@@ -64,7 +66,6 @@ const RegisterScreen = () => {
   const [passwordErrorMessageVisible, setPasswordErrorMessageVisible] =
     useState(false);
   const emailPhoneErrorMessageType = (message: string) => {
-    console.log('Setting error message:', message);
     setEmailPhoneErrorMessage(message);
   };
   const passwordErrorMessageType = (message: string) => {
@@ -90,7 +91,6 @@ const RegisterScreen = () => {
           Purpose: 'register',
         } as any);
       } else if (result.status === '403') {
-        console.log('here we go');
         emailPhoneErrorMessageType(result.message || 'User already exists!');
         setEmailPhoneErrorMessageVisible(true);
       } else {
@@ -124,19 +124,7 @@ const RegisterScreen = () => {
         emailPhone: emailPhone.toLocaleLowerCase(),
       });
 
-      console.log('result', result);
       return result;
-      // if (result.status === '200') {
-      //   navigation.navigate('VerifyOTP', {
-      //     EmailPhone: emailPhone,
-      //     Password: password,
-      //     Purpose: 'register',
-      //   } as any);
-      // } else if (result.status === '403') {
-      //   console.log('here i going');
-      //   emailPhoneErrorMessageType('User already exist!');
-      //   setEmailPhoneErrorMessageVisible(true);
-      // }
     } catch (error) {
       console.error('Error registering user:', error);
       console.error(error);
@@ -227,10 +215,18 @@ const RegisterScreen = () => {
             </Pressable>
           </View>
         </View>
-        <TouchableOpacity onPress={handleSkipButton} style={styles.skipBtn}>
-          <Text style={styles.skipBtnLebel}>Skip</Text>
-          <ChevronLeftLight width={16} height={16} style={styles.skipIcon} />
-        </TouchableOpacity>
+        {skipLoading ? (
+          <ActivityIndicator
+            style={{marginTop: 20}}
+            size="small"
+            color="#000"
+          />
+        ) : (
+          <TouchableOpacity onPress={handleSkipButton} style={styles.skipBtn}>
+            <Text style={styles.skipBtnLebel}>Skip</Text>
+            <ChevronLeftLight width={16} height={16} style={styles.skipIcon} />
+          </TouchableOpacity>
+        )}
       </View>
     </ScrollView>
   );

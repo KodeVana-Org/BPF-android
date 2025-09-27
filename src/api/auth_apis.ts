@@ -150,7 +150,7 @@ interface VerifyTokenData {
 
 export const verify_Token = async (headers: object): Promise<any> => {
   try {
-    const response = await ApiManager.get('user/auth', { headers });
+    const response = await ApiManager.get('user/auth', {headers});
     return response.data;
   } catch (error: any) {
     console.log('Error occurred accessing user details:', error.message);
@@ -184,7 +184,7 @@ export const get_single_user = async (data: UserData): Promise<any> => {
   }
 };
 
-export const removeBanner = async (userId : string): Promise<any> => {
+export const removeBanner = async (userId: string): Promise<any> => {
   try {
     const response = await ApiManager.delete(`api/delete-hero/${userId}`);
     return response;

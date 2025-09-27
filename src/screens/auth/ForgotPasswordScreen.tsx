@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import ChevronLeftLight from '../../assets/icons/ChevronLeftLight';
@@ -19,16 +20,19 @@ import {AuthParamList} from '../../navigator/AuthNavigator';
 import {AppContext} from '../../navigator/AppContext';
 import {user_forgot_pass} from '../../api/auth_apis';
 import {validateEmailPhone} from '../../validation/validateInputDetails';
+import {Toast} from 'react-native-toast-message/lib/src/Toast';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
 const ForgotPasswordScreen = () => {
   const navigation = useNavigation<StackNavigationProp<AuthParamList>>();
-
+  const [skipLoading, setSkipLoading] = useState(false);
+  const [loading, setIsLoading] = useState(false);
   /// Handle navigation to HomeScreen
   const {setNavigateToHome} = useContext(AppContext);
   const handleSkipButton = () => {
+    setSkipLoading(true);
     setNavigateToHome(true);
   };
 
@@ -36,6 +40,7 @@ const ForgotPasswordScreen = () => {
   const [emailPhone, setEmailPhone] = useState('');
   const handleEmailPhoneInputChange = (text: string) => {
     setEmailPhone(text.trim());
+    setEmailPhoneErrorMessageVisible(false);
   };
 
   // Handle input field error messages
@@ -63,23 +68,30 @@ const ForgotPasswordScreen = () => {
 
   // Pass user data to the server
   const passUserData = async () => {
+    setIsLoading(true);
     try {
       const result = await user_forgot_pass({
         emailPhone: emailPhone.toLocaleLowerCase(),
       });
       if (result.status === 200) {
+        Toast.show({
+          type: 'success',
+          text1: 'OTP send successfully',
+        });
         navigation.navigate('VerifyOTP', {
           EmailPhone: emailPhone,
           Password: '',
           Purpose: 'resetPassword',
         } as any);
       } else if (result.status === 404) {
-        emailPhoneErrorMessageType('Invalid details!');
+        emailPhoneErrorMessageType(result.message || 'Invalid details!');
         setEmailPhoneErrorMessageVisible(true);
       }
     } catch (error) {
       console.error('Error registering user:', error);
       console.error(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -123,9 +135,15 @@ const ForgotPasswordScreen = () => {
           </View>
           <View style={styles.sendOTPContainer}>
             <TouchableOpacity
-              style={styles.sendOTP}
-              onPress={handlesendOTPButton}>
-              <Text style={styles.sendOTPLebel}>Send OTP</Text>
+              style={[styles.sendOTP, loading && {opacity: 0.6}]}
+              onPress={handlesendOTPButton}
+              disabled={loading} // 👈 disable while loading
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" size="small" />
+              ) : (
+                <Text style={styles.sendOTPLebel}>Send OTP</Text>
+              )}
             </TouchableOpacity>
           </View>
           <View style={styles.registerContainer}>
@@ -146,10 +164,18 @@ const ForgotPasswordScreen = () => {
             </Text>
           </Pressable>
         </View>
-        <TouchableOpacity onPress={handleSkipButton} style={styles.skipBtn}>
-          <Text style={styles.skipBtnLebel}>Skip</Text>
-          <ChevronLeftLight width={16} height={16} style={styles.skipIcon} />
-        </TouchableOpacity>
+        {skipLoading ? (
+          <ActivityIndicator
+            style={{marginTop: 20}}
+            size="small"
+            color="#000"
+          />
+        ) : (
+          <TouchableOpacity onPress={handleSkipButton} style={styles.skipBtn}>
+            <Text style={styles.skipBtnLebel}>Skip</Text>
+            <ChevronLeftLight width={16} height={16} style={styles.skipIcon} />
+          </TouchableOpacity>
+        )}
       </View>
     </ScrollView>
   );

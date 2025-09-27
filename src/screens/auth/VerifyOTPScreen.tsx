@@ -64,6 +64,7 @@ const VerifyOTPScreen = ({route}: Props) => {
   const [otp, setOtp] = useState('');
   const handleOtpInputChange = (text: string) => {
     setOtp(text.trim());
+    setOtpErrorMessageVisible(false);
   };
 
   // Handle input field error messages
@@ -170,14 +171,16 @@ const VerifyOTPScreen = ({route}: Props) => {
         emailPhone: emailPhone.toLocaleLowerCase(),
         otp: otp,
       });
+      console.log('RES', result);
       if (result.status === 200) {
-        otpErrorMessageType('OTP verified successfully');
+        console.log('here');
+        // otpErrorMessageType('OTP verified successfully');
         navigation.navigate('SetPass', {
           EmailPhone: emailPhone,
         } as any);
         return true;
-      } else if (result.status === 404) {
-        otpErrorMessageType('Wrong OTP!');
+      } else if (result.status === 403) {
+        otpErrorMessageType(result.message || 'Wrong OTP!');
         setOtpErrorMessageVisible(true);
       } else if (result.status === 400) {
         otpErrorMessageType('OTP expired!');
@@ -203,6 +206,7 @@ const VerifyOTPScreen = ({route}: Props) => {
 
   // Handle resend otp button
   const handleResendOtpButton = async () => {
+    setOtpErrorMessageVisible(false);
     const newDuration = 119;
     setSecondsRemaining(newDuration);
     setTargetTime(Date.now() + newDuration * 1000);
