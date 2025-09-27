@@ -11,6 +11,7 @@ import {
   ScrollView,
   Image,
   ActivityIndicator,
+  Clipboard,
 } from 'react-native';
 import {user_register} from '../../api/auth_apis';
 import LinearGradient from 'react-native-linear-gradient';
@@ -25,6 +26,7 @@ import {
   validateEmailPhone,
   validatePassword,
 } from '../../validation/validateInputDetails';
+import {Toast} from 'react-native-toast-message/lib/src/Toast';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -227,6 +229,34 @@ const RegisterScreen = () => {
             <ChevronLeftLight width={16} height={16} style={styles.skipIcon} />
           </TouchableOpacity>
         )}
+
+        <View style={{flex: 1, alignItems: 'center', paddingBottom: 0}}>
+          {/* YOUR ENTIRE container here */}
+          <View style={styles.container}>{/* all form stuff */}</View>
+
+          {/* 📞 Contact Info - move this INSIDE the ScrollView */}
+          <TouchableOpacity
+            onPress={() => {
+              Clipboard.setString('9365646114');
+              Toast.show({
+                type: 'success',
+                text1: 'Copied to clipboard',
+                text2: 'Phone number copied!',
+              });
+            }}>
+            <View
+              style={{
+                padding: 10,
+                backgroundColor: '#e0f7fa',
+                borderRadius: 8,
+                marginTop: 20,
+              }}>
+              <Text style={{fontSize: 16, color: '#00796b'}}>
+                📱 Contact us: 9365646114
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </View>
       </View>
     </ScrollView>
   );
