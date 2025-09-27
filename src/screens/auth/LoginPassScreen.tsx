@@ -33,6 +33,7 @@ const windowHeight = Dimensions.get('window').height;
 
 const LoginPassScreen = () => {
   const navigation = useNavigation<StackNavigationProp<AuthParamList>>();
+  const [skipLoading, setSkipLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   // Handle hide password
@@ -44,6 +45,7 @@ const LoginPassScreen = () => {
   /// Handle navigation to HomeScreen
   const {setNavigateToHome} = useContext(AppContext);
   const handleNavigateToHome = () => {
+    setSkipLoading(true);
     setNavigateToHome(true);
   };
 
@@ -256,10 +258,20 @@ const LoginPassScreen = () => {
             </Text>
           </Pressable>
         </View>
-        <TouchableOpacity onPress={handleNavigateToHome} style={styles.skipBtn}>
-          <Text style={styles.skipBtnLebel}>Skip</Text>
-          <ChevronLeftLight width={16} height={16} style={styles.skipIcon} />
-        </TouchableOpacity>
+        {skipLoading ? (
+          <ActivityIndicator
+            style={{marginTop: 20}}
+            size="small"
+            color="#000"
+          />
+        ) : (
+          <TouchableOpacity
+            onPress={handleNavigateToHome}
+            style={styles.skipBtn}>
+            <Text style={styles.skipBtnLebel}>Skip</Text>
+            <ChevronLeftLight width={16} height={16} style={styles.skipIcon} />
+          </TouchableOpacity>
+        )}
       </View>
     </ScrollView>
   );

@@ -28,10 +28,12 @@ const windowHeight = Dimensions.get('window').height;
 const LoginOtpScreen = () => {
   const navigation = useNavigation<StackNavigationProp<AuthParamList>>();
 
+  const [skipLoading, setSkipLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   /// Handle navigation to HomeScreen
   const {setNavigateToHome} = useContext(AppContext);
   const handleSkipButton = () => {
+    setSkipLoading(true);
     setNavigateToHome(true);
   };
 
@@ -71,7 +73,6 @@ const LoginOtpScreen = () => {
       const result = await user_login_otp({
         emailPhone: emailPhone.toLocaleLowerCase(),
       });
-      console.log('rs: ', result);
       if (result.status === 200) {
         Toast.show({
           type: 'success',
@@ -167,10 +168,18 @@ const LoginOtpScreen = () => {
             </Text>
           </Pressable>
         </View>
-        <TouchableOpacity onPress={handleSkipButton} style={styles.skipBtn}>
-          <Text style={styles.skipBtnLebel}>Skip</Text>
-          <ChevronLeftLight width={16} height={16} style={styles.skipIcon} />
-        </TouchableOpacity>
+        {skipLoading ? (
+          <ActivityIndicator
+            style={{marginTop: 20}}
+            size="small"
+            color="#000"
+          />
+        ) : (
+          <TouchableOpacity onPress={handleSkipButton} style={styles.skipBtn}>
+            <Text style={styles.skipBtnLebel}>Skip</Text>
+            <ChevronLeftLight width={16} height={16} style={styles.skipIcon} />
+          </TouchableOpacity>
+        )}
       </View>
     </ScrollView>
   );
