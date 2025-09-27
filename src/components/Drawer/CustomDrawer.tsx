@@ -207,7 +207,8 @@ function CustomDrawer(props: any) {
               try {
                 // 1. Clear stored token
                 await AsyncStorage.removeItem('AccessToken');
-                await queryClient.removeQueries({queryKey: ['userProfile']});
+                await AsyncStorage.removeItem('userProfile');
+                // await queryClient.removeQueries({queryKey: ['userProfile']});
                 // 2. Clear React Query cache
                 await queryClient.clear();
                 await asyncStoragePersister.removeClient();
@@ -216,7 +217,7 @@ function CustomDrawer(props: any) {
                 setNavigateToHome(false);
                 navigationJD.reset({
                   index: 0,
-                  routes: [{name: 'AuthNavigator'}],
+                  routes: [{name: 'Login'}],
                 });
               } catch (error) {
                 Toast.show({
