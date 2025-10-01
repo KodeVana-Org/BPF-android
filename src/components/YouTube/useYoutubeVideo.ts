@@ -5,17 +5,20 @@ interface YoutubePage {
   items: any[];
   nextPageToken?: string;
 }
-type YoutubeError = Error;
+type YoutubeError = {
+  code: number;
+  message: string;
+};
 
 const YOUTUBE_VIDEOS_QUERY_KEY: QueryKey = ['youtubeVideos'];
 
 export const useYoutubeVideos = () => {
   return useInfiniteQuery<
-    YoutubePage, // Data type
-    YoutubeError, // Error type
-    YoutubePage, // Paginated data structure
+    YoutubePage, // Data
+    YoutubeError, // Error
+    YoutubePage, // Paginated structure
     QueryKey, // Query key
-    string | undefined // pageParam type
+    string | undefined // pageParam
   >({
     queryKey: YOUTUBE_VIDEOS_QUERY_KEY,
 
@@ -24,12 +27,32 @@ export const useYoutubeVideos = () => {
       if (pageParam) {
         params.pageToken = pageParam;
       }
-      const response = await ApiManager.get('youtube/videos', {params});
-      return response.data as YoutubePage;
+
+      try {
+        const response = await ApiManager.get('youtube/videos', {params});
+        return response.data as YoutubePage;
+      } catch (err: any) {
+        // Extract and handle quota error
+        if (
+          err?.response?.status === 403 &&
+          err?.response?.data?.error?.message?.includes('quota')
+        ) {
+          console.error('YouTube quota exceeded. Stopping further fetches.');
+          throw new Error('YouTube quota exceeded. Try again later.');
+        }
+
+        // Re-throw other errors
+        throw err;
+      }
     },
 
     initialPageParam: undefined,
 
-    getNextPageParam: lastPage => lastPage.nextPageToken || undefined,
+    getNextPageParam: lastPage => {
+      // If quota was exceeded or there's no next token, stop pagination
+      return lastPage?.nextPageToken ?? undefined;
+    },
+
+    retry: false, // 🔒 Disable retry on failure to avoid re-hitting the API
   });
 };
