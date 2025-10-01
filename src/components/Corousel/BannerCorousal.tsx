@@ -1,9 +1,15 @@
 import React, {useEffect, useState} from 'react';
-import {Dimensions, Image, View, StyleSheet, ActivityIndicator} from 'react-native';
+import {
+  Dimensions,
+  Image,
+  View,
+  StyleSheet,
+  ActivityIndicator,
+  Text,
+} from 'react-native';
 import Carousel from 'react-native-reanimated-carousel';
 import {get_banners} from '../../api/app_data_apis';
 import {useQuery, useQueryClient} from '@tanstack/react-query';
-import { _Text } from 'react-native';
 
 function BannerCarousal() {
   const width = Dimensions.get('window').width;
@@ -26,7 +32,8 @@ function BannerCarousal() {
 
   if (isBannerLoading) {
     return (
-      <View style={{height: 200, justifyContent: 'center', alignItems: 'center'}}>
+      <View
+        style={{height: 200, justifyContent: 'center', alignItems: 'center'}}>
         <ActivityIndicator size="large" color="gray" />
       </View>
     );
@@ -34,7 +41,8 @@ function BannerCarousal() {
 
   if (isError || bannerImages.length === 0) {
     return (
-      <View style={{height: 200, justifyContent: 'center', alignItems: 'center'}}>
+      <View
+        style={{height: 200, justifyContent: 'center', alignItems: 'center'}}>
         <Text style={{color: 'red'}}>Failed to load banners</Text>
       </View>
     );
@@ -42,7 +50,6 @@ function BannerCarousal() {
   const handleSnapToItem = index => {
     setActiveIndex(index);
   };
-
 
   return (
     <View style={{flex: 1}}>

@@ -8,6 +8,7 @@ import {
   PostsScreen,
   VideosScreen,
   ConferenceLobbyScreen,
+  EventScreen,
 } from '../screens';
 import CustomBottomTab from '../components/BottomButton/CustomBottomTab';
 import useFetchUserData from '../data/userData';
@@ -15,6 +16,7 @@ import useFetchUserData from '../data/userData';
 export type BottomTabParamList = {
   Home: undefined;
   Post: undefined;
+  Event: undefined;
   Video: undefined;
   Conference: undefined;
 };
@@ -34,6 +36,7 @@ const BottomTabNavigator = () => {
       screenOptions={{headerShown: false}}>
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Post" component={PostsScreen} />
+      <Tab.Screen name="Event" component={EventScreen} />
       <Tab.Screen name="Video" component={VideosScreen} />
       {conferenceAccess ? (
         <Tab.Screen name="Conference" component={ConferenceLobbyScreen} />

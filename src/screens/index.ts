@@ -10,6 +10,7 @@ export {default as SetPassScreen} from './auth/SetPasswordScreen';
 export {default as HomeScreen} from './bottomTab/HomeScreen';
 export {default as PostsScreen} from './bottomTab/PostScreen';
 export {default as VideosScreen} from './bottomTab/VideoScreen';
+export {default as EventScreen} from './bottomTab/EventScreen';
 export {default as ConferenceLobbyScreen} from './bottomTab/ConferenceLobbyScreen';
 
 ////////////////////** DRAWER SCREENS **////////////////////

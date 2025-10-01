@@ -83,8 +83,8 @@ android {
         applicationId "com.kodevana.bpf"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 35
-        versionName "1.0.0"
+        versionCode 36
+        versionName "1.1.0"
     }
     signingConfigs {
         release {
