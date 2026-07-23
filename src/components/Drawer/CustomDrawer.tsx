@@ -215,10 +215,12 @@ function CustomDrawer(props: any) {
 
                 // 3. Reset navigation and state
                 setNavigateToHome(false);
-                navigationJD.reset({
-                  index: 0,
-                  routes: [{name: 'Login'}],
-                });
+
+                navigationJD.navigate('Login');
+                // navigationJD.reset({
+                //   index: 0,
+                //   routes: [{name: 'Login'}],
+                // });
               } catch (error) {
                 Toast.show({
                   type: 'error',
