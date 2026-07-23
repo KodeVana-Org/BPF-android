@@ -1,7 +1,9 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {createStackNavigator} from '@react-navigation/stack';
+import { createStackNavigator } from '@react-navigation/stack';
 import AuthNavigator from './AuthNavigator';
+import { useQueryClient } from '@tanstack/react-query';
+import { get_banners, get_posts } from '../api/app_data_apis';
 
 import DrawerNavigator from './DrawerNavigator';
 import {
@@ -17,7 +19,7 @@ import {
   JoinScreen,
   DonateScreen,
 } from '../screens';
-import {AppContext} from './AppContext';
+import { AppContext } from './AppContext';
 
 export type RootStackParamList = {
   AuthNavigator: undefined;
@@ -39,11 +41,16 @@ const Stack = createStackNavigator<RootStackParamList>();
 
 const RootNavigator = () => {
   const [showSplash, setShowSplash] = useState(true);
-  const {navigateToHome} = useContext(AppContext);
+  const { navigateToHome } = useContext(AppContext);
   const [tokenExist, setTokenExist] = useState(false);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     handleGetToken();
+
+    queryClient.prefetchQuery({ queryKey: ['banner'], queryFn: get_banners });
+    queryClient.prefetchQuery({ queryKey: ['posts'], queryFn: get_posts });
+
     setTimeout(() => {
       setShowSplash(false);
     }, 1000);
@@ -59,7 +66,7 @@ const RootNavigator = () => {
   };
 
   return (
-    <Stack.Navigator screenOptions={{headerShown: false}}>
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
       {showSplash ? (
         <Stack.Screen name="Splash" component={SplashScreen} />
       ) : navigateToHome || tokenExist ? (
