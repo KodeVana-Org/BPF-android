@@ -58,7 +58,9 @@ const PostFlatList = ({
   });
 
   const posts = postData?.posts || [];
+  const length = postData?.totalPost || [];
   const filteredPosts = marginType === 'right' ? posts.slice(0, 5) : posts;
+  console.log("POSTS", length);
 
   const calculateMargin = () => {
     if (marginType === 'bottom') {
@@ -203,6 +205,8 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 10,
     alignItems: 'center',
+    paddingBottom: 15,
+    paddingTop: 8,
     // justifyContent: 'cneter',
   },
   card: {
@@ -212,7 +216,6 @@ const styles = StyleSheet.create({
     borderColor: '#E4E6EB',
     width: width - 20,
     overflow: 'hidden',
-
   },
   cardHeader: {
     flexDirection: 'row',
