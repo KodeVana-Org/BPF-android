@@ -37,7 +37,7 @@ const BottomTabNavigator = () => {
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Post" component={PostsScreen} />
       <Tab.Screen name="Event" component={EventScreen} />
-      <Tab.Screen name="Video" component={VideosScreen} />
+      {/* <Tab.Screen name="Video" component={VideosScreen} /> */}
       {conferenceAccess ? (
         <Tab.Screen name="Conference" component={ConferenceLobbyScreen} />
       ) : null}
