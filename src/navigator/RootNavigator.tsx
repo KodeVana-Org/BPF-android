@@ -49,7 +49,16 @@ const RootNavigator = () => {
     handleGetToken();
 
     queryClient.prefetchQuery({ queryKey: ['banner'], queryFn: get_banners });
-    queryClient.prefetchQuery({ queryKey: ['posts'], queryFn: get_posts });
+
+    // as i am updated this 
+    // queryClient.prefetchQuery({ queryKey: ['posts'], queryFn: get_posts });
+    queryClient.prefetchInfiniteQuery({
+        queryKey:['posts'] ,
+        queryFn: ({pageParam}) => get_posts({
+            cursor: pageParam
+        }),
+        initialPageParam: null
+    }),
 
     setTimeout(() => {
       setShowSplash(false);
