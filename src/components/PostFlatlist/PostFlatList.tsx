@@ -66,7 +66,6 @@ const {
   },
 });
 
-console.log("DATA", data);
 
 // Safely flatten all pages into a single continuous array
 const allPosts = data?.pages
@@ -75,8 +74,6 @@ const allPosts = data?.pages
 
 const posts = marginType === 'right' ? allPosts.slice(0, 5) : allPosts;
 
-  console.log("allPOST: ", allPosts);
-  console.log("POST: ", posts);
   const calculateMargin = () => {
     return marginType === 'bottom' ? { marginBottom: 14 } : { marginRight: 14 };
   };

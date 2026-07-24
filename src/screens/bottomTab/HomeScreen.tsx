@@ -71,7 +71,7 @@ const HomeScreen = ({navigation}: any) => {
                       bottomNavigation.navigate('Post');
                     }}
                     style={styles.viewAllBtn}>
-                    <Text style={styles.viewAllBtnText}>View All</Text>
+                     <Text style={styles.viewAllBtnText}>View All</Text> 
                   </TouchableOpacity>
                 </View>
               </View>
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#FFF',
     paddingHorizontal: 10,
-    paddingVertical: 7,
+    paddingVertical: 5,
     margin: 0,
   },
   tempSection: {
