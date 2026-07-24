@@ -1,15 +1,28 @@
 import ApiManager from './ApiManager';
 
 /////////////////** GET ALL POSTS **//////////////////
-export const get_posts = async (): Promise<any> => {
-  try {
-    // const response = await ApiManager.get('post/get-all-post');
-    const response = await ApiManager.get('post/get-posts');
-    return response.data;
-  } catch (error: any) {
-    console.log('Error occurred during accessing post:', error.message);
-    return error.response.data;
-  }
+
+// export const get_posts = async (): Promise<any> => {
+//   try {
+//     // const response = await ApiManager.get('post/get-all-post');
+//     const response = await ApiManager.get('post/get-posts');
+//     return response.data;
+//   } catch (error: any) {
+//     console.log('Error occurred during accessing post:', error.message);
+//     return error.response.data;
+//   }
+// };
+
+export const get_posts = async ({cursor}: {cursor?: string | null} = {}) => {
+    try {
+        const res = await ApiManager.get('/post/get-posts', {
+            params: {limit: 10, cursor: cursor || undefined},
+        });
+        return res.data;
+    } catch (error: any) {
+        console.log('Error fetching posts:', error?.message);
+        throw error;
+    }
 };
 
 /////////////////** GET SINGLE POST **//////////////////
