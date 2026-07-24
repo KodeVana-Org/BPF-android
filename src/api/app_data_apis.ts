@@ -41,13 +41,53 @@ export const get_single_post = async (data: GetSinglePost): Promise<any> => {
 };
 
 /////////////////** GET ALL GALLERY **//////////////////
-export const get_gallery = async (): Promise<any> => {
+// export const get_gallery = async (): Promise<any> => {
+//   try {
+//     const response = await ApiManager.get('youtube/get-gallery');
+//     return response.data;
+//   } catch (error: any) {
+//     console.log('Error occurred during accessing gallery:', error.message);
+//     return error.response.data;
+//   }
+// };
+
+export interface GalleryItem {
+  _id: string;
+  imageUrl: string[];
+  descriptions: string;
+  __v: number;
+}
+
+export interface GalleryResponse {
+  success: boolean;
+  message: string;
+  data: {
+    gallery: GalleryItem[];
+    pagination: {
+      limit: number;
+      hasMore: boolean;
+      nextCursor: string | null;
+    };
+  };
+}
+export const get_gallery = async ({
+  cursor,
+  limit = 10,
+}: {
+  cursor?: string;
+  limit?: number;
+}) => {
   try {
-    const response = await ApiManager.get('youtube/get-gallery');
+    const response = await ApiManager.get('youtube/get-gallery', {
+      params: {
+        limit,
+        ...(cursor && { cursor }),
+      },
+    });
     return response.data;
   } catch (error: any) {
     console.log('Error occurred during accessing gallery:', error.message);
-    return error.response.data;
+    throw error; // Throw so TanStack Query can catch errors properly
   }
 };
 

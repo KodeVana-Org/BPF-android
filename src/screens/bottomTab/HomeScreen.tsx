@@ -80,6 +80,7 @@ const HomeScreen = ({navigation}: any) => {
               </ScrollView>
             </View>
             {/* Gallery */}
+            {/* Gallery Section on Home Screen */}
             <View style={styles.galleryListContainer}>
               <View style={styles.headerNav}>
                 <View>
@@ -95,9 +96,9 @@ const HomeScreen = ({navigation}: any) => {
                   </TouchableOpacity>
                 </View>
               </View>
-              <ScrollView horizontal style={styles.image}>
-                <GalleryFlatlist horizontal={true} marginType="right" />
-              </ScrollView>
+
+              {/* FlatList manages its own horizontal scrolling */}
+              <GalleryFlatlist horizontal={true} marginType="right" isHomeScreen={true} />
             </View>
             {/* Temporery filer section */}
             <View style={styles.tempSection}>
