@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   FlatList,
   View,
@@ -10,17 +10,18 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from 'react-native';
-import {get_posts, remove_post} from '../../api/app_data_apis';
-import {useNavigation} from '@react-navigation/native';
-import {ModelsParamList} from '../../navigator/ModelNavigator';
-import {StackNavigationProp} from '@react-navigation/stack';
+import { get_posts, remove_post } from '../../api/app_data_apis';
+import { useNavigation } from '@react-navigation/native';
+import { ModelsParamList } from '../../navigator/ModelNavigator';
+import { StackNavigationProp } from '@react-navigation/stack';
 import useFetchUserData from '../../data/userData';
 import Toast from 'react-native-toast-message';
-import {useQuery, useQueryClient} from '@tanstack/react-query';
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 
-const {width} = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 const timeAgo = (dateString: string) => {
+  if (!dateString) return '';
   const diffMs = Date.now() - new Date(dateString).getTime();
   const mins = Math.floor(diffMs / 60000);
   if (mins < 1) return 'Just now';
@@ -38,79 +39,91 @@ const PostFlatList = ({
   refreshing,
   onRefresh,
 }: {
-  horizontal: boolean;
+  horizontal?: boolean;
   marginType?: 'bottom' | 'right';
   refreshing?: boolean;
   onRefresh?: () => void;
 }) => {
-  const [isLoading, setIsLoading] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const navigation = useNavigation<StackNavigationProp<ModelsParamList>>();
-  const {admin, postAdmin, myServerId} = useFetchUserData();
+  const { admin, postAdmin, myServerId } = useFetchUserData();
   const queryClient = useQueryClient();
 
-  const {
-    data: postData,
-    isLoading: isPostsLoading,
-    isError,
-  } = useQuery({
-    queryKey: ['posts'],
-    queryFn: get_posts,
-  });
+const {
+  data,
+  fetchNextPage,
+  hasNextPage,
+  isFetchingNextPage,
+  isLoading,
+  isError,
+  refetch,
+} = useInfiniteQuery({
+  queryKey: ['posts'],
+  queryFn: ({pageParam}) => get_posts({cursor: pageParam}),
+  initialPageParam: null as string | null,
+  getNextPageParam: (lastPage) => {
+    return lastPage?.hasMore ? lastPage?.nextCursor : undefined;
+  },
+});
 
-  const posts = postData?.posts || [];
-  const length = postData?.totalPost || [];
-  const filteredPosts = marginType === 'right' ? posts.slice(0, 5) : posts;
-  console.log("POSTS", length);
+console.log("DATA", data);
 
+// Safely flatten all pages into a single continuous array
+const allPosts = data?.pages
+  ? data.pages.flatMap((page) => page?.posts ?? [])
+  : [];
+
+const posts = marginType === 'right' ? allPosts.slice(0, 5) : allPosts;
+
+  console.log("allPOST: ", allPosts);
+  console.log("POST: ", posts);
   const calculateMargin = () => {
-    if (marginType === 'bottom') {
-      return {marginBottom: 14};
-    } else {
-      return {marginRight: 14};
+    return marginType === 'bottom' ? { marginBottom: 14 } : { marginRight: 14 };
+  };
+
+  const handleLoadMore = () => {
+    if (hasNextPage && !isFetchingNextPage && !horizontal) {
+      fetchNextPage();
     }
   };
 
   const handleRemovePost = async (postId: string) => {
-    setIsLoading(postId);
+    setDeletingId(postId);
     try {
       const result = await remove_post(postId, myServerId);
-      if (result.status === 200) {
+      if (result?.status === 200) {
         Toast.show({
           type: 'success',
           text1: 'Post deleted successfully',
-          text2: 'The post was deleted successfully',
         });
-        queryClient.invalidateQueries(['posts']);
+        queryClient.invalidateQueries({ queryKey: ['posts'] });
       } else {
         Toast.show({
           type: 'error',
           text1: 'Deletion failed',
-          text2: 'Unable to delete post',
         });
       }
     } catch (error) {
       Toast.show({
         type: 'error',
         text1: 'Network error',
-        text2: 'Please check your internet connection',
       });
-      console.error('Error removing post:', error);
     } finally {
-      setIsLoading(null);
+      setDeletingId(null);
     }
   };
 
-  if (isPostsLoading) {
+  if (isLoading) {
     return (
-      <View style={{alignItems: 'center', justifyContent: 'center', padding: 40}}>
-        <ActivityIndicator size="large" />
+      <View style={styles.centerContainer}>
+        <ActivityIndicator size="large" color="#046A38" />
       </View>
     );
   }
 
   if (isError) {
     return (
-      <View style={{alignItems: 'center', justifyContent: 'center', padding: 40}}>
+      <View style={styles.centerContainer}>
         <Text>Error loading posts.</Text>
       </View>
     );
@@ -119,21 +132,33 @@ const PostFlatList = ({
   return (
     <View style={[styles.container, calculateMargin()]}>
       <FlatList
-        data={filteredPosts}
+        data={posts}
         horizontal={horizontal}
         showsHorizontalScrollIndicator={false}
         showsVerticalScrollIndicator={false}
-        keyExtractor={(item, index) => index.toString()}
+        keyExtractor={(item) => item.id}
         contentContainerStyle={{
           paddingRight: horizontal ? 16 : 0,
           paddingBottom: horizontal ? 0 : 16,
         }}
-        initialNumToRender={3}
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={5}
         refreshing={horizontal ? undefined : refreshing}
-        onRefresh={horizontal ? undefined : onRefresh}
-        renderItem={({item}) => (
+        onRefresh={horizontal ? undefined : onRefresh || refetch}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={() => {
+          if (!isFetchingNextPage) return null;
+          return (
+            <View style={styles.footerLoader}>
+              <ActivityIndicator size="small" color="#046A38" />
+            </View>
+          );
+        }}
+        renderItem={({ item }) => (
           <View style={[styles.card, calculateMargin()]}>
-            {/* Header: avatar + name + time + menu */}
+            {/* Header */}
             <View style={styles.cardHeader}>
               <View style={styles.avatar}>
                 <Text style={styles.avatarText}>
@@ -151,8 +176,8 @@ const PostFlatList = ({
                 <TouchableOpacity
                   style={styles.menuButton}
                   onPress={() => handleRemovePost(item.id)}
-                  disabled={isLoading === item.id}>
-                  {isLoading === item.id ? (
+                  disabled={deletingId === item.id}>
+                  {deletingId === item.id ? (
                     <ActivityIndicator color="#65676B" size="small" />
                   ) : (
                     <Text style={styles.menuDots}>⋯</Text>
@@ -161,37 +186,39 @@ const PostFlatList = ({
               )}
             </View>
 
-            {/* Caption */}
-            {!!item.postComment && (
-              <Text style={styles.caption}>{item.postComment}</Text>
+            {/* Caption (Handling key misspelling in API) */}
+            {!!(item.posetComment || item.postComment) && (
+              <Text style={styles.caption}>
+                {item.posetComment || item.postComment}
+              </Text>
             )}
 
             {/* Image */}
             <Pressable
-              onPress={() => navigation.navigate('ViewPost', {postId: item.id})}>
-              <Image source={{uri: item.postImages}} style={styles.image} />
+              onPress={() => navigation.navigate('ViewPost', { postId: item.id })}>
+              <Image source={{ uri: item.postImages }} style={styles.image} />
             </Pressable>
 
             {/* Action row */}
             {!horizontal && (
-            <View style={styles.actionRow}>
-              <TouchableOpacity style={styles.actionBtn}>
-                <Text style={styles.actionIcon}>👍</Text>
-                <Text style={styles.actionLabel}>Like</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.actionBtn}
-                onPress={() =>
-                  navigation.navigate('ViewPost', {postId: item.id})
-                }>
-                <Text style={styles.actionIcon}>💬</Text>
-                <Text style={styles.actionLabel}>Comment</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.actionBtn}>
-                <Text style={styles.actionIcon}>↗️</Text>
-                <Text style={styles.actionLabel}>Share</Text>
-              </TouchableOpacity>
-            </View>
+              <View style={styles.actionRow}>
+                <TouchableOpacity style={styles.actionBtn}>
+                  <Text style={styles.actionIcon}>👍</Text>
+                  <Text style={styles.actionLabel}>Like</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.actionBtn}
+                  onPress={() =>
+                    navigation.navigate('ViewPost', { postId: item.id })
+                  }>
+                  <Text style={styles.actionIcon}>💬</Text>
+                  <Text style={styles.actionLabel}>Comment</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.actionBtn}>
+                  <Text style={styles.actionIcon}>↗️</Text>
+                  <Text style={styles.actionLabel}>Share</Text>
+                </TouchableOpacity>
+              </View>
             )}
           </View>
         )}
@@ -203,11 +230,18 @@ const PostFlatList = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    gap: 10,
     alignItems: 'center',
     paddingBottom: 15,
     paddingTop: 8,
-    // justifyContent: 'cneter',
+  },
+  centerContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 40,
+  },
+  footerLoader: {
+    paddingVertical: 16,
+    alignItems: 'center',
   },
   card: {
     backgroundColor: '#FFFFFF',
@@ -216,6 +250,7 @@ const styles = StyleSheet.create({
     borderColor: '#E4E6EB',
     width: width - 20,
     overflow: 'hidden',
+    marginBottom: 12,
   },
   cardHeader: {
     flexDirection: 'row',
