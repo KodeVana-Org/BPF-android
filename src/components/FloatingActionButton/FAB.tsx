@@ -57,7 +57,8 @@ const FAB = () => {
   });
 
   return (
-    <View style={{flex: 1}}>
+    // <View style={{flex: 1}}>
+    <View >
       <Animated.View style={[styles.container, animatedStyle]}>
         <Pressable
           style={styles.iconContainer}
