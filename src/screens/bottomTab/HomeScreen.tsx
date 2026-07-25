@@ -59,6 +59,7 @@ const HomeScreen = ({navigation}: any) => {
             <BannerCarousal />
             {/* Join Donate */}
             <JoinDonate />
+
             {/* PostList */}
             <View style={styles.postListContainer}>
               <View style={styles.headerNav}>
@@ -75,10 +76,11 @@ const HomeScreen = ({navigation}: any) => {
                   </TouchableOpacity>
                 </View>
               </View>
-              <ScrollView horizontal style={styles.image}>
+              {/* <ScrollView horizontal style={styles.image}> */}
                 <PostFlatList horizontal={true} marginType="right" />
-              </ScrollView>
+              {/* </ScrollView> */}
             </View>
+
             {/* Gallery */}
             {/* Gallery Section on Home Screen */}
             <View style={styles.galleryListContainer}>

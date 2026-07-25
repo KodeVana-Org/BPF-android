@@ -232,9 +232,10 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   centerContainer: {
+    width: width,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 40,
+    alignSelf: 'center',
   },
   footerLoader: {
     paddingVertical: 16,
