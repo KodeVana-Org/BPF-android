@@ -158,10 +158,23 @@ const posts = marginType === 'right' ? allPosts.slice(0, 5) : allPosts;
             {/* Header */}
             <View style={styles.cardHeader}>
               <View style={styles.avatar}>
-                <Text style={styles.avatarText}>
-                  {(item.PostCreatorId?.email?.[0] || 'A').toUpperCase()}
-                </Text>
+                {item.PostCreatorId?.profileImage ? (
+                    <Image 
+                      source={{ uri: item.PostCreatorId.profileImage }} 
+                      style={styles.avatarImage} 
+                    />
+                  ) : (
+                    <Text style={styles.avatarText}>
+                      {(item.PostCreatorId?.email?.[0] || 'A').toUpperCase()}
+                    </Text>
+                  )}
+                  </View>
+              {/*
+                // <Text style={styles.avatarText}>
+                //   {(item.PostCreatorId?.email?.[0] || 'A').toUpperCase()}
+                // </Text>
               </View>
+              */}
               <View style={styles.headerText}>
                 <Text style={styles.name} numberOfLines={1}>
                   {item.PostCreatorId?.email?.split('@')[0] || 'Admin'}
@@ -236,6 +249,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'center',
+    paddingTop: 50,
   },
   footerLoader: {
     paddingVertical: 16,
@@ -264,6 +278,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#046A38',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 20,
   },
   avatarText: {
     color: '#FFF',
