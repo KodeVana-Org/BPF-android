@@ -1,3 +1,4 @@
+import axios from 'axios';
 import ApiManager from './ApiManager';
 
 /////////////////** GET ALL POSTS **//////////////////
@@ -13,16 +14,16 @@ import ApiManager from './ApiManager';
 //   }
 // };
 
-export const get_posts = async ({cursor}: {cursor?: string | null} = {}) => {
-    try {
-        const res = await ApiManager.get('/post/get-posts', {
-            params: {limit: 10, cursor: cursor || undefined},
-        });
-        return res.data;
-    } catch (error: any) {
-        console.log('Error fetching posts:', error?.message);
-        throw error;
-    }
+export const get_posts = async ({ cursor }: { cursor?: string | null } = {}) => {
+  try {
+    const res = await ApiManager.get('/post/get-posts', {
+      params: { limit: 10, cursor: cursor || undefined },
+    });
+    return res.data;
+  } catch (error: any) {
+    console.log('Error fetching posts:', error?.message);
+    throw error;
+  }
 };
 
 /////////////////** GET SINGLE POST **//////////////////
@@ -116,7 +117,7 @@ export const get_banners = async (): Promise<any> => {
 ///////  REMOVE POST /////
 export const remove_post = async (postId: string, userId: string) => {
   try {
-    const response = await ApiManager.delete(`post/delete-post/${postId}`, {data: {userId: userId}});
+    const response = await ApiManager.delete(`post/delete-post/${postId}`, { data: { userId: userId } });
     return response;
   } catch (error: any) {
     console.error('Error deleting post:', error.message);
@@ -146,8 +147,8 @@ export const create_banner = async (formData: FormData) => {
 
 // update-user
 export const update_user_details = async (userId, data) => {
-    const response = await ApiManager.post(`user/update-details/${userId}`, data);
-    return response.data;
+  const response = await ApiManager.post(`user/update-details/${userId}`, data);
+  return response.data;
 };
 
 // update-profile pic
@@ -161,5 +162,15 @@ export const update_user_profile = async (userId, data) => {
       },
     }
   );
+  return response.data;
+};
+
+// update postTitles 
+export const update_post_titles = async (postId: string, postComment: string) => {
+  // Use .put() or .patch() depending on your backend router setup, 
+  // and pass an object payload instead of a raw string.
+  const response = await ApiManager.patch(`post/updateTitles/${postId}`, {
+    postComment: postComment, // or posetComment depending on your schema
+  });
   return response.data;
 };

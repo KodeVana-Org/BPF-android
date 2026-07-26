@@ -14,7 +14,7 @@ import Toast from 'react-native-toast-message';
 import { useQueryClient } from '@tanstack/react-query';
 // Import your update API function here:
 // import { update_post, get_single_post } from '../../api/app_data_apis';
-import { get_single_post } from '../../api/app_data_apis';
+import { get_single_post, update_post_titles } from '../../api/app_data_apis';
 
 type EditPostRouteProp = RouteProp<ModelsParamList, 'EditPost'>;
 
@@ -33,7 +33,6 @@ const EditPostScreen = () => {
         const fetchPostDetails = async () => {
             setLoading(true);
             try {
-                console.log("ID******************8", postId);
                 // Pass an object with the postId property instead of a raw string
                 const res = await get_single_post({ postId: postId.toString() });
                 console.log("RES", res);
@@ -56,10 +55,7 @@ const EditPostScreen = () => {
         setSubmitting(true);
         try {
             // Replace with your actual backend update API call:
-            // const result = await update_post(postId, { postComment: comment });
-
-            // Simulated success response:
-            const result = { status: 200 };
+            const result = await update_post_titles(postId, { postComment: comment });
 
             if (result?.status === 200) {
                 Toast.show({ type: 'success', text1: 'Post updated successfully' });
