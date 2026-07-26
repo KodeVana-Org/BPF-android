@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createStackNavigator } from '@react-navigation/stack';
 import AuthNavigator from './AuthNavigator';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { get_banners, get_posts } from '../api/app_data_apis';
 
 import DrawerNavigator from './DrawerNavigator';
@@ -20,6 +20,7 @@ import {
   DonateScreen,
 } from '../screens';
 import { AppContext } from './AppContext';
+import { check_join_status } from '../api/join-donate_apis';
 
 export type RootStackParamList = {
   AuthNavigator: undefined;
@@ -48,21 +49,29 @@ const RootNavigator = () => {
   useEffect(() => {
     handleGetToken();
 
-    queryClient.prefetchQuery({ queryKey: ['banner'], queryFn: get_banners });
+    // ✅ Prefetch Join Status in advance
+    queryClient.prefetchQuery({
+      queryKey: ['joinStatus'],
+      queryFn: check_join_status,
+    });
 
-    // as i am updated this 
-    // queryClient.prefetchQuery({ queryKey: ['posts'], queryFn: get_posts });
+    // ✅ Prefetch Banners
+    queryClient.prefetchQuery({
+      queryKey: ['banner'],
+      queryFn: get_banners
+    });
+    // ✅ Prefetch Posts
     queryClient.prefetchInfiniteQuery({
-        queryKey:['posts'] ,
-        queryFn: ({pageParam}) => get_posts({
-            cursor: pageParam
-        }),
-        initialPageParam: null
-    }),
+      queryKey: ['posts'],
+      queryFn: ({ pageParam }) => get_posts({ cursor: pageParam }),
+      initialPageParam: null,
+    });
 
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       setShowSplash(false);
-    }, 1000);
+    }, 1500); // Give it 1.5s minimum
+
+    return () => clearTimeout(timer);
   }, []);
 
   const handleGetToken = async () => {
