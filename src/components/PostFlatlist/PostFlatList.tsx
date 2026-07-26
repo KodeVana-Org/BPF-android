@@ -44,35 +44,36 @@ const PostFlatList = ({
   refreshing?: boolean;
   onRefresh?: () => void;
 }) => {
-  const [deletingId, setDeletingId] = useState<string | null>(null);
   const navigation = useNavigation<StackNavigationProp<ModelsParamList>>();
   const { admin, postAdmin, myServerId } = useFetchUserData();
   const queryClient = useQueryClient();
+  const [activeMenuPostId, setActiveMenuPostId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
-const {
-  data,
-  fetchNextPage,
-  hasNextPage,
-  isFetchingNextPage,
-  isLoading,
-  isError,
-  refetch,
-} = useInfiniteQuery({
-  queryKey: ['posts'],
-  queryFn: ({pageParam}) => get_posts({cursor: pageParam}),
-  initialPageParam: null as string | null,
-  getNextPageParam: (lastPage) => {
-    return lastPage?.hasMore ? lastPage?.nextCursor : undefined;
-  },
-});
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+    refetch,
+  } = useInfiniteQuery({
+    queryKey: ['posts'],
+    queryFn: ({ pageParam }) => get_posts({ cursor: pageParam }),
+    initialPageParam: null as string | null,
+    getNextPageParam: (lastPage) => {
+      return lastPage?.hasMore ? lastPage?.nextCursor : undefined;
+    },
+  });
 
 
-// Safely flatten all pages into a single continuous array
-const allPosts = data?.pages
-  ? data.pages.flatMap((page) => page?.posts ?? [])
-  : [];
+  // Safely flatten all pages into a single continuous array
+  const allPosts = data?.pages
+    ? data.pages.flatMap((page) => page?.posts ?? [])
+    : [];
 
-const posts = marginType === 'right' ? allPosts.slice(0, 5) : allPosts;
+  const posts = marginType === 'right' ? allPosts.slice(0, 5) : allPosts;
 
   const calculateMargin = () => {
     return marginType === 'bottom' ? { marginBottom: 14 } : { marginRight: 14 };
@@ -84,7 +85,21 @@ const posts = marginType === 'right' ? allPosts.slice(0, 5) : allPosts;
     }
   };
 
-  const handleRemovePost = async (postId: string) => {
+  //TODO: 
+  // clicking handleMenuPost will open dropdown of 
+  // edit 
+  // delelte
+  const handleOpenMenu = (postId: string) => {
+    setActiveMenuPostId(activeMenuPostId === postId ? null : postId);
+  };
+
+  const handleEditPost = (postId: string) => {
+    setActiveMenuPostId(null);
+    navigation.navigate('EditPost', { postId });
+  };
+
+  const handleDeletePost = async (postId: string) => {
+    setActiveMenuPostId(null);
     setDeletingId(postId);
     try {
       const result = await remove_post(postId, myServerId);
@@ -112,7 +127,7 @@ const posts = marginType === 'right' ? allPosts.slice(0, 5) : allPosts;
 
 
   if (isLoading) {
-      return;
+    return;
     // return (
     //   <View style={styles.centerContainer}>
     //     <ActivityIndicator size="large" color="#046A38" />
@@ -161,16 +176,16 @@ const posts = marginType === 'right' ? allPosts.slice(0, 5) : allPosts;
             <View style={styles.cardHeader}>
               <View style={styles.avatar}>
                 {item.PostCreatorId?.profileImage ? (
-                    <Image 
-                      source={{ uri: item.PostCreatorId.profileImage }} 
-                      style={styles.avatarImage} 
-                    />
-                  ) : (
-                    <Text style={styles.avatarText}>
-                      {(item.PostCreatorId?.email?.[0] || 'A').toUpperCase()}
-                    </Text>
-                  )}
-                  </View>
+                  <Image
+                    source={{ uri: item.PostCreatorId.profileImage }}
+                    style={styles.avatarImage}
+                  />
+                ) : (
+                  <Text style={styles.avatarText}>
+                    {(item.PostCreatorId?.email?.[0] || 'A').toUpperCase()}
+                  </Text>
+                )}
+              </View>
               <View style={styles.headerText}>
                 <Text style={styles.name} numberOfLines={1}>
                   {item.PostCreatorId?.email?.split('@')[0] || 'Admin'}
@@ -179,16 +194,34 @@ const posts = marginType === 'right' ? allPosts.slice(0, 5) : allPosts;
               </View>
 
               {(admin || postAdmin) && (
-                <TouchableOpacity
-                  style={styles.menuButton}
-                  onPress={() => handleRemovePost(item.id)}
-                  disabled={deletingId === item.id}>
-                  {deletingId === item.id ? (
-                    <ActivityIndicator color="#65676B" size="small" />
-                  ) : (
-                    <Text style={styles.menuDots}>⋯</Text>
+                <View style={styles.menuContainer}>
+                  <TouchableOpacity
+                    style={styles.menuButton}
+                    onPress={() => handleOpenMenu(item.id)}
+                    disabled={deletingId === item.id}>
+                    {deletingId === item.id ? (
+                      <ActivityIndicator color="#65676B" size="small" />
+                    ) : (
+                      <Text style={styles.menuDots}>⋯</Text>
+                    )}
+                  </TouchableOpacity>
+
+                  {activeMenuPostId === item.id && (
+                    <View style={styles.dropdownMenu}>
+                      <TouchableOpacity
+                        style={styles.dropdownItem}
+                        onPress={() => handleEditPost(item.id)}>
+                        <Text style={styles.dropdownText}>Edit</Text>
+                      </TouchableOpacity>
+                      <View style={styles.dropdownDivider} />
+                      <TouchableOpacity
+                        style={styles.dropdownItem}
+                        onPress={() => handleDeletePost(item.id)}>
+                        <Text style={[styles.dropdownText, { color: '#E53935' }]}>Delete</Text>
+                      </TouchableOpacity>
+                    </View>
                   )}
-                </TouchableOpacity>
+                </View>
               )}
             </View>
 
@@ -340,6 +373,40 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#65676B',
+  },
+
+  menuContainer: {
+    position: 'relative',
+    zIndex: 10,
+  },
+  dropdownMenu: {
+    position: 'absolute',
+    right: 0,
+    top: 35,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E4E6EB',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 5,
+    width: 110,
+    overflow: 'hidden',
+  },
+  dropdownItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+  },
+  dropdownText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#050505',
+  },
+  dropdownDivider: {
+    height: 1,
+    backgroundColor: '#E4E6EB',
   },
 });
 
