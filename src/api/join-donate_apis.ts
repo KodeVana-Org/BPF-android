@@ -23,3 +23,17 @@ export const join_bpf = async (data: JoinData): Promise<any> => {
   }
 };
 
+export const check_join_status = async() => {
+    const response = await ApiManager.get("setting/check/join");
+    return response.data;
+}
+
+export const wakeServer = async() => {
+    try {
+        const response = await ApiManager.get("setting/check/join");
+        return response.data;
+    } catch (error) {
+        // Fail silently in the background if the server is still waking up
+        console.log('Server waking up...');
+    }
+}
