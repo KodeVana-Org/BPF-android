@@ -78,11 +78,12 @@ const GalleryFlatlist = ({
   };
 
   if (isLoading) {
-    return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#000" />
-      </View>
-    );
+      return;
+    // return (
+    //   <View style={styles.centerContainer}>
+    //     <ActivityIndicator size="large" color="#000" />
+    //   </View>
+    // );
   }
 
   if (isError) {

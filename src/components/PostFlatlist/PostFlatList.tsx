@@ -110,12 +110,14 @@ const posts = marginType === 'right' ? allPosts.slice(0, 5) : allPosts;
     }
   };
 
+
   if (isLoading) {
-    return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#046A38" />
-      </View>
-    );
+      return;
+    // return (
+    //   <View style={styles.centerContainer}>
+    //     <ActivityIndicator size="large" color="#046A38" />
+    //   </View>
+    // );
   }
 
   if (isError) {
@@ -169,12 +171,6 @@ const posts = marginType === 'right' ? allPosts.slice(0, 5) : allPosts;
                     </Text>
                   )}
                   </View>
-              {/*
-                // <Text style={styles.avatarText}>
-                //   {(item.PostCreatorId?.email?.[0] || 'A').toUpperCase()}
-                // </Text>
-              </View>
-              */}
               <View style={styles.headerText}>
                 <Text style={styles.name} numberOfLines={1}>
                   {item.PostCreatorId?.email?.split('@')[0] || 'Admin'}
@@ -241,7 +237,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    paddingBottom: 15,
+    // paddingBottom: 15,
     paddingTop: 8,
   },
   centerContainer: {
