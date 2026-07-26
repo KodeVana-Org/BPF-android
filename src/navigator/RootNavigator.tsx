@@ -18,6 +18,7 @@ import {
   ViewPostScreen,
   JoinScreen,
   DonateScreen,
+  EditPostScreen,
 } from '../screens';
 import { AppContext } from './AppContext';
 import { check_join_status } from '../api/join-donate_apis';
@@ -36,6 +37,7 @@ export type RootStackParamList = {
   UploadGallery: undefined;
   ConferenceStream: undefined;
   ViewPost: undefined;
+  EditPost: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -98,6 +100,8 @@ const RootNavigator = () => {
       <Stack.Screen name="EditUserData" component={EditUserDataScreen} />
       <Stack.Screen name="UploadPost" component={UploadPostScreen} />
       <Stack.Screen name="UploadGallery" component={UploadGalleryScreen} />
+      <Stack.Screen name="EditPost" component={EditPostScreen} />
+
       <Stack.Screen
         name="ConferenceStream"
         component={ConferenceStreamScreen}
