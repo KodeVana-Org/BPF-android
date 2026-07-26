@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Dimensions,
   ScrollView,
@@ -13,13 +13,17 @@ import {
 } from 'react-native';
 import NavHeader from '../../components/Header/NavHeader';
 import PenIcon from '../../assets/icons/PenIcon.js';
-import {get_single_post} from '../../api/app_data_apis';
+import { get_single_post } from '../../api/app_data_apis';
 import useFetchUserData from '../../data/userData';
 import axios from 'axios';
 import Toast from 'react-native-toast-message';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { update_post_titles } from '../../api/app_data_apis';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { ModelsParamList } from '../../navigator/ModelNavigator.js';
 
-const {width} = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 const timeAgo = (dateString: string) => {
   if (!dateString) return '';
@@ -34,13 +38,16 @@ const timeAgo = (dateString: string) => {
   return new Date(dateString).toLocaleDateString();
 };
 
-const ViewPostScreen = ({route}: any) => {
+const ViewPostScreen = ({ route }: any) => {
+  const navigation = useNavigation<StackNavigationProp<ModelsParamList>>();
   const postId = route.params.postId;
   const [postTitle, setPostTitle] = useState('');
   const [editTitle, setEditTitle] = useState(false);
   const [edited, setEdited] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const {userData, postAdmin} = useFetchUserData();
+  const { userData, postAdmin } = useFetchUserData();
+  const queryClient = useQueryClient();
+
 
   const handleTitleValueChange = (text: string) => {
     setPostTitle(text);
@@ -56,7 +63,7 @@ const ViewPostScreen = ({route}: any) => {
   } = useQuery({
     queryKey: ['post', postId],
     queryFn: async () => {
-      const response = await get_single_post({postId});
+      const response = await get_single_post({ postId });
       if (!response?.success || !response?.post) {
         throw new Error('Post not found');
       }
@@ -78,24 +85,21 @@ const ViewPostScreen = ({route}: any) => {
   const handlePostUpdate = async () => {
     setIsSaving(true);
     try {
-      // TODO: replace with update_post from api/update_app_data_apis, not a raw hardcoded-IP call
-      const response = await axios.put(
-        `http://3.108.26.92:6969/post/update/${postId}`,
-        {
-          postTitle: postTitle.trim(),
-          userId: userData.id,
-        },
-      );
-      if (response.status === 200) {
-        Toast.show({type: 'success', text1: 'Post updated successfully'});
-        setEdited(false);
-        setEditTitle(false);
+
+      const result = await update_post_titles(postId, postTitle);
+      if (result?.success) {
+        Toast.show({ type: 'success', text1: 'Post updated successfully' });
+        queryClient.invalidateQueries({ queryKey: ['posts'] });
+        navigation.goBack();
+
       } else {
-        Toast.show({type: 'error', text1: 'Failed to update post'});
+        Toast.show({ type: 'error', text1: 'Update failed' });
       }
+
     } catch (error) {
       console.error('Error updating post:', error);
-      Toast.show({type: 'error', text1: 'Network error while saving'});
+      Toast.show({ type: 'error', text1: 'Network error while saving' });
+
     } finally {
       setIsSaving(false);
     }
@@ -166,7 +170,7 @@ const ViewPostScreen = ({route}: any) => {
           </View>
 
           {/* Image */}
-          <Image source={{uri: postImage}} style={styles.image} />
+          <Image source={{ uri: postImage }} style={styles.image} />
 
           {/* Save button, only when actively editing */}
           {edited && editTitle && (
