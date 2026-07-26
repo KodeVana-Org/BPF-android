@@ -35,7 +35,6 @@ const EditPostScreen = () => {
             try {
                 // Pass an object with the postId property instead of a raw string
                 const res = await get_single_post({ postId: postId.toString() });
-                console.log("RES", res);
                 setComment(res?.post.postTitles || res?.post?.postTitles || '');
             } catch (error) {
                 Toast.show({ type: 'error', text1: 'Failed to load post details' });
@@ -55,9 +54,8 @@ const EditPostScreen = () => {
         setSubmitting(true);
         try {
             // Replace with your actual backend update API call:
-            const result = await update_post_titles(postId, { postComment: comment });
-
-            if (result?.status === 200) {
+            const result = await update_post_titles(postId, comment);
+            if (result?.success) {
                 Toast.show({ type: 'success', text1: 'Post updated successfully' });
                 queryClient.invalidateQueries({ queryKey: ['posts'] });
                 navigation.goBack();
