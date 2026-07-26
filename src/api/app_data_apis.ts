@@ -167,10 +167,8 @@ export const update_user_profile = async (userId, data) => {
 
 // update postTitles 
 export const update_post_titles = async (postId: string, postComment: string) => {
-  // Use .put() or .patch() depending on your backend router setup, 
-  // and pass an object payload instead of a raw string.
   const response = await ApiManager.patch(`post/updateTitles/${postId}`, {
-    postComment: postComment, // or posetComment depending on your schema
+    postComment: postComment,
   });
   return response.data;
 };
