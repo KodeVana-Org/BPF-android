@@ -10,31 +10,30 @@ import {
   TextInput,
   RefreshControl,
 } from 'react-native';
-import React, {useState} from 'react';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import React, { useState } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import ImagePicker from 'react-native-image-crop-picker';
 import NavHeader from '../../components/Header/NavHeader';
-import ApiManager from '../../api/ApiManager';
 import useFetchUserData from '../../data/userData';
 import Toast from 'react-native-toast-message';
-import {create_post} from '../../api/app_data_apis';
-import {useMutation, useQueryClient} from '@tanstack/react-query';
+import { create_post } from '../../api/app_data_apis';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 const UploadPostScreen = () => {
   const [imageSelectionMessage, setImageSelectionMessage] = useState(
     'No image is selected to upload!',
   );
-  const [postImageUrl, setPostImageUrl] = useState(null);
+  const [postImageUrl, setPostImageUrl] = useState<string | null>(null);
   const [postTitle, setPostTitle] = useState('');
   const [placeholder, setPlaceholder] = useState('Enter post title*');
   const [inputFieldColor, setInputFieldColor] = useState('gray');
-  const [isUploading, setIsUploading] = useState(false);
+
   const userData = useFetchUserData();
   const userID = userData.myServerId;
 
   const queryClient = useQueryClient();
 
-  const {mutate: createPost, isPending: isCreating} = useMutation({
+  const { mutate: createPost, isPending: isCreating } = useMutation({
     mutationFn: create_post,
     onSuccess: () => {
       Toast.hide();
@@ -46,10 +45,10 @@ const UploadPostScreen = () => {
       // Reset form state
       setPostTitle('');
       setPostImageUrl(null);
-      setImageSelectionMessage('Post uploaded successfully!');
+      setImageSelectionMessage('No image is selected to upload!');
 
       // Refetch posts
-      queryClient.invalidateQueries({queryKey: ['posts']});
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
     },
     onError: () => {
       Toast.hide();
@@ -60,9 +59,10 @@ const UploadPostScreen = () => {
       });
     },
   });
+
   // Handle saving post title
   const handlePostTitleInputChange = (text: string) => {
-    setPostTitle(text.trim());
+    setPostTitle(text);
     setInputFieldColor('gray');
   };
 
@@ -79,9 +79,19 @@ const UploadPostScreen = () => {
 
   // Handle upload post
   const handleCreatePost = () => {
-    if (postTitle === '') {
+    // if (!postTitle.trim()) {
+    if (!postTitle || postTitle.trim() === '') {
       setPlaceholder('Title is required!');
       setInputFieldColor('red');
+      return;
+    }
+
+    if (!postImageUrl) {
+      Toast.show({
+        type: 'error',
+        text1: 'Image is required',
+        text2: 'Please select an image to upload.',
+      });
       return;
     }
 
@@ -132,12 +142,12 @@ const UploadPostScreen = () => {
               inputMode="text"
               onChangeText={handlePostTitleInputChange}
               value={postTitle}
-              style={[styles.inputField, {borderColor: inputFieldColor}]}
+              style={[styles.inputField, { borderColor: inputFieldColor }]}
               placeholder={placeholder}
               placeholderTextColor={inputFieldColor}
             />
             {postImageUrl ? (
-              <Image source={{uri: postImageUrl}} style={styles.postImage} />
+              <Image source={{ uri: postImageUrl }} style={styles.postImage} />
             ) : (
               <Text style={styles.imageSelectionMessage}>
                 {imageSelectionMessage}
@@ -150,10 +160,10 @@ const UploadPostScreen = () => {
                     style={[
                       styles.formButton,
                       styles.uploadButton,
-                      {opacity: isUploading ? 0.5 : 1},
+                      { opacity: isCreating ? 0.5 : 1 },
                     ]}
                     onPress={handleCreatePost}
-                    disabled={isCreating} // disable while uploading
+                    disabled={isCreating}
                   >
                     <Text style={styles.buttonText}>
                       {isCreating ? 'Uploading...' : 'Upload'}
@@ -161,7 +171,8 @@ const UploadPostScreen = () => {
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[styles.formButton, styles.cancelButton]}
-                    onPress={cancelUpload}>
+                    onPress={cancelUpload}
+                    disabled={isCreating}>
                     <Text style={styles.buttonText}>Cancel</Text>
                   </TouchableOpacity>
                 </View>
@@ -217,6 +228,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '500',
     paddingVertical: 40,
+    textAlign: 'center',
   },
   postImage: {
     borderRadius: 10,
@@ -224,24 +236,22 @@ const styles = StyleSheet.create({
     width: Dimensions.get('window').width - 65,
   },
   formButton: {
-    paddingHorizontal: 30,
+    paddingHorizontal: 20,
   },
   uploadButton: {
     backgroundColor: '#046A38',
     paddingVertical: 10,
-    paddingHorizontal: 20,
     borderRadius: 10,
   },
   cancelButton: {
     backgroundColor: '#FF671F',
     paddingVertical: 10,
-    paddingHorizontal: 20,
     borderRadius: 10,
   },
   buttonContainer: {
     paddingTop: 20,
     flex: 1,
-    gap: 50,
+    gap: 20,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
