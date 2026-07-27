@@ -10,93 +10,107 @@ import {
   TextInput,
   RefreshControl,
 } from 'react-native';
-import React, {useState} from 'react';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import React, { useState } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import ImagePicker from 'react-native-image-crop-picker';
 import NavHeader from '../../components/Header/NavHeader';
-import ApiManager from '../../api/ApiManager';
 import useFetchUserData from '../../data/userData';
 import Toast from 'react-native-toast-message';
+import { create_post } from '../../api/app_data_apis';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 const UploadPostScreen = () => {
   const [imageSelectionMessage, setImageSelectionMessage] = useState(
     'No image is selected to upload!',
   );
-  const [postImageUrl, setPostImageUrl] = useState(null);
+  const [postImageUrl, setPostImageUrl] = useState<string | null>(null);
   const [postTitle, setPostTitle] = useState('');
   const [placeholder, setPlaceholder] = useState('Enter post title*');
   const [inputFieldColor, setInputFieldColor] = useState('gray');
+
   const userData = useFetchUserData();
-  const userID = userData.id;
+  const userID = userData.myServerId;
+
+  const queryClient = useQueryClient();
+
+  const { mutate: createPost, isPending: isCreating } = useMutation({
+    mutationFn: create_post,
+    onSuccess: () => {
+      Toast.hide();
+      Toast.show({
+        type: 'success',
+        text1: 'Post uploaded successfully',
+      });
+
+      // Reset form state
+      setPostTitle('');
+      setPostImageUrl(null);
+      setImageSelectionMessage('No image is selected to upload!');
+
+      // Refetch posts
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+    },
+    onError: () => {
+      Toast.hide();
+      Toast.show({
+        type: 'error',
+        text1: 'Upload failed',
+        text2: 'Check your network and try again.',
+      });
+    },
+  });
 
   // Handle saving post title
   const handlePostTitleInputChange = (text: string) => {
-    setPostTitle(text.trim());
+    setPostTitle(text);
     setInputFieldColor('gray');
   };
 
   // Select photo from library
   const openImagePicker = () => {
     ImagePicker.openPicker({
-      width: 300,
-      height: 300,
       cropping: true,
+      compressImageQuality: 1,
+      mediaType: 'photo',
     }).then(image => {
       setPostImageUrl(image.path);
     });
   };
 
   // Handle upload post
-  const uploadPost = async () => {
-    if (postTitle === '') {
+  const handleCreatePost = () => {
+    // if (!postTitle.trim()) {
+    if (!postTitle || postTitle.trim() === '') {
       setPlaceholder('Title is required!');
       setInputFieldColor('red');
       return;
-    } else {
-      const formData = new FormData();
-      formData.append('postImage', {
-        uri: postImageUrl,
-        type: 'image/jpeg',
-        name: 'postImage.jpg',
-      });
-      formData.append('postTitle', postTitle);
-      formData.append('userId', userID);
-      try {
-        const result = await ApiManager.post('post/create-post', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
-        if (result.status === 200) {
-          showToast();
-          console.log('Post uploaded successfully!');
-          setPostImageUrl(null);
-          setImageSelectionMessage('Post uploaded seccessfully!');
-        } else {
-          console.log('Post not uploaded, please try again!');
-        }
-      } catch (error) {
-        for (let i = 1; i < 3; i++) {
-          if (postImageUrl != null) {
-            const retryResult = await ApiManager.post(
-              'post/create-post',
-              formData,
-              {
-                headers: {
-                  'Content-Type': 'multipart/form-data',
-                },
-              },
-            );
-            if (retryResult.status === 200) {
-              console.log('Post uploaded successfully!');
-              setPostImageUrl(null);
-              setImageSelectionMessage('Post uploaded seccessfully!');
-              break;
-            }
-          }
-        }
-      }
     }
+
+    if (!postImageUrl) {
+      Toast.show({
+        type: 'error',
+        text1: 'Image is required',
+        text2: 'Please select an image to upload.',
+      });
+      return;
+    }
+
+    Toast.show({
+      type: 'info',
+      text1: 'Uploading...',
+      autoHide: false,
+    });
+
+    const formData = new FormData();
+    formData.append('postImage', {
+      uri: postImageUrl,
+      type: 'image/jpeg',
+      name: 'postImage.jpg',
+    });
+    formData.append('postTitle', postTitle);
+    formData.append('userId', userID);
+
+    createPost(formData);
   };
 
   // Handle upload cancellation
@@ -113,14 +127,6 @@ const UploadPostScreen = () => {
     }, 2000);
   }, []);
 
-  // Toast
-  const showToast = () => {
-    Toast.show({
-      type: 'success',
-      text1: 'Post uploaded successfully',
-    });
-  };
-
   return (
     <SafeAreaView style={styles.container}>
       <Animated.View style={styles.container}>
@@ -136,12 +142,12 @@ const UploadPostScreen = () => {
               inputMode="text"
               onChangeText={handlePostTitleInputChange}
               value={postTitle}
-              style={[styles.inputField, {borderColor: inputFieldColor}]}
+              style={[styles.inputField, { borderColor: inputFieldColor }]}
               placeholder={placeholder}
               placeholderTextColor={inputFieldColor}
             />
             {postImageUrl ? (
-              <Image source={{uri: postImageUrl}} style={styles.postImage} />
+              <Image source={{ uri: postImageUrl }} style={styles.postImage} />
             ) : (
               <Text style={styles.imageSelectionMessage}>
                 {imageSelectionMessage}
@@ -151,13 +157,22 @@ const UploadPostScreen = () => {
               {postImageUrl ? (
                 <View style={styles.buttonContainer}>
                   <TouchableOpacity
-                    style={[styles.formButton, styles.uploadButton]}
-                    onPress={uploadPost}>
-                    <Text style={styles.buttonText}>Upload</Text>
+                    style={[
+                      styles.formButton,
+                      styles.uploadButton,
+                      { opacity: isCreating ? 0.5 : 1 },
+                    ]}
+                    onPress={handleCreatePost}
+                    disabled={isCreating}
+                  >
+                    <Text style={styles.buttonText}>
+                      {isCreating ? 'Uploading...' : 'Upload'}
+                    </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[styles.formButton, styles.cancelButton]}
-                    onPress={cancelUpload}>
+                    onPress={cancelUpload}
+                    disabled={isCreating}>
                     <Text style={styles.buttonText}>Cancel</Text>
                   </TouchableOpacity>
                 </View>
@@ -213,6 +228,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '500',
     paddingVertical: 40,
+    textAlign: 'center',
   },
   postImage: {
     borderRadius: 10,
@@ -220,24 +236,22 @@ const styles = StyleSheet.create({
     width: Dimensions.get('window').width - 65,
   },
   formButton: {
-    paddingHorizontal: 30,
+    paddingHorizontal: 20,
   },
   uploadButton: {
     backgroundColor: '#046A38',
     paddingVertical: 10,
-    paddingHorizontal: 20,
     borderRadius: 10,
   },
   cancelButton: {
     backgroundColor: '#FF671F',
     paddingVertical: 10,
-    paddingHorizontal: 20,
     borderRadius: 10,
   },
   buttonContainer: {
     paddingTop: 20,
     flex: 1,
-    gap: 50,
+    gap: 20,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

@@ -1,5 +1,5 @@
 import React from 'react';
-import {createStackNavigator} from '@react-navigation/stack';
+import { createStackNavigator } from '@react-navigation/stack';
 import {
   EditUsersScreen,
   EditUserDataScreen,
@@ -20,7 +20,7 @@ export default function AuthNavigator() {
   const Stack = createStackNavigator<AdminParamList>();
 
   return (
-    <Stack.Navigator screenOptions={{headerShown: false}}>
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="EditUsers" component={EditUsersScreen} />
       <Stack.Screen name="EditUserData" component={EditUserDataScreen} />
       <Stack.Screen name="EditBanner" component={EditBannerScreen} />

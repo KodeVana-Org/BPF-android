@@ -1,6 +1,9 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, {useEffect, useMemo, useState} from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigation } from '@react-navigation/native';
 import {
+    ActivityIndicator,
   Dimensions,
   ScrollView,
   StyleSheet,
@@ -39,6 +42,33 @@ const JoinScreen = () => {
   const [visible8, setVisible8] = useState(false);
   const [visible9, setVisible9] = useState(false);
 
+const navigation =useNavigation()
+const queryClient = useQueryClient();
+
+const { mutate: join, isPending: joining } = useMutation({
+  mutationFn: join_bpf,
+  onSuccess: () => {
+    Toast.hide();
+    Toast.show({
+      type: 'success',
+      text1: 'User joined successfully',
+    });
+
+    // Refetch posts
+    queryClient.invalidateQueries(['userProfile']); // refetch user data
+    navigation.navigate('Home');
+  },
+
+  onError: () => {
+    Toast.hide();
+    Toast.show({
+      type: 'error',
+      text1: 'failed to join',
+      text2: 'Check your network and try again.',
+    });
+  },
+});
+
   // Radio button
   const radioButtons = useMemo(
     () => [
@@ -69,9 +99,14 @@ const JoinScreen = () => {
     if (userData.email) {
       setEmail(userData.email);
       setPreLoginCridential('email');
-    } else if (userData.phone) {
-      setPhone(userData.phone.substring(3));
+    }
+    if (userData.phone) {
+      setPhone(userData.phone);
       setPreLoginCridential('phone');
+    }
+    if (userData.name) {
+      setName(userData.name);
+      setPreLoginCridential('name');
     }
   }, [userData]);
 
@@ -200,8 +235,10 @@ const JoinScreen = () => {
       return;
     }
     try {
-      const result = await join_bpf({
+       join({
         id: userData.id,
+        email:email,
+        phone:phone,
         name: name,
         gender: gender,
         fatherName: fatherName,
@@ -210,32 +247,18 @@ const JoinScreen = () => {
         ps: policeStation,
         district: district,
       });
-      if (result.status === 200) {
-        showToast();
-        console.log('Joined successfully');
-      } else if (result.status === 404) {
-        console.log('User not found');
-      } else if (result.status === 401) {
-        console.log('Only users can join');
-      } else if (result.status === 400) {
-        console.log('Invalid district');
-      }
-      console.log(result);
     } catch (error) {
       console.error('Error logging user:', error);
+        Toast.show({
+            type:"error",
+            text1:"failed to joined"
+        })
     }
   };
 
   // District list
   const districts = ['Kokrajhar', 'Chirang', 'Udalguri', 'Baksa', 'Tamulpur'];
 
-  // Toast
-  const showToast = () => {
-    Toast.show({
-      type: 'success',
-      text1: 'Joined BPF successfully',
-    });
-  };
 
   return (
     <SafeAreaProvider style={styles.container}>
@@ -415,9 +438,17 @@ const JoinScreen = () => {
           </View>
 
           {/* Join Button */}
-          <TouchableOpacity onPress={handleJoinButton} style={styles.joinBtn}>
+        <TouchableOpacity
+          onPress={handleJoinButton}
+          style={[styles.joinBtn, joining && { opacity: 0.7 }]}
+          disabled={joining}
+        >
+          {joining ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
             <Text style={styles.joinBtnLebel}>Join Now</Text>
-          </TouchableOpacity>
+          )}
+        </TouchableOpacity>
         </View>
       </ScrollView>
     </SafeAreaProvider>

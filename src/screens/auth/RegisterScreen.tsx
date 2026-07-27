@@ -10,6 +10,8 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
+  ActivityIndicator,
+  Clipboard,
 } from 'react-native';
 import {user_register} from '../../api/auth_apis';
 import LinearGradient from 'react-native-linear-gradient';
@@ -24,13 +26,15 @@ import {
   validateEmailPhone,
   validatePassword,
 } from '../../validation/validateInputDetails';
+import {Toast} from 'react-native-toast-message/lib/src/Toast';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
 const RegisterScreen = () => {
   const navigation = useNavigation<StackNavigationProp<AuthParamList>>();
-
+  const [isLoading, setIsLoading] = useState(false);
+  const [skipLoading, setSkipLoading] = useState(false);
   // Handle hide password
   const [hidePassword, setHidePassword] = useState(true);
   const toggleHidePassword = () => {
@@ -40,6 +44,7 @@ const RegisterScreen = () => {
   /// Handle navigation to HomeScreen
   const {setNavigateToHome} = useContext(AppContext);
   const handleSkipButton = () => {
+    setSkipLoading(true);
     setNavigateToHome(true);
   };
 
@@ -48,6 +53,8 @@ const RegisterScreen = () => {
   const [password, setPassword] = useState('');
   const handleEmailPhoneInputChange = (text: string) => {
     setEmailPhone(text.trim());
+    // setEmailPhoneErrorMessageVisible(false); //not working this one
+    setEmailPhoneErrorMessage('');
   };
   const handlePasswordInputChange = (text: string) => {
     setPassword(text.trim());
@@ -69,28 +76,47 @@ const RegisterScreen = () => {
 
   // Handle form data validation
   const handlesendOTPButton = async () => {
+    setIsLoading(true);
+
     const emailPhoneValidationResult = validateEmailPhone(emailPhone);
     const passwordValidationResult = validatePassword(password);
+
     if (
       emailPhoneValidationResult?.success &&
       passwordValidationResult?.success
     ) {
-      passUserData();
+      const result = await passUserData();
+      if (result.status === '200') {
+        navigation.navigate('VerifyOTP', {
+          EmailPhone: emailPhone,
+          Password: password,
+          Purpose: 'register',
+        } as any);
+      } else if (result.status === '403') {
+        emailPhoneErrorMessageType(result.message || 'User already exists!');
+        setEmailPhoneErrorMessageVisible(true);
+      } else {
+        emailPhoneErrorMessageType('Server error. Try again.');
+        setEmailPhoneErrorMessageVisible(true);
+      }
     }
+
+    // Show validation errors
     if (!emailPhoneValidationResult?.success) {
       emailPhoneErrorMessageType(emailPhoneValidationResult?.message || '');
       setEmailPhoneErrorMessageVisible(true);
     } else {
-      emailPhoneErrorMessageType(emailPhoneValidationResult?.message || '');
       setEmailPhoneErrorMessageVisible(false);
     }
+
     if (!passwordValidationResult?.success) {
       passwordErrorMessageType(passwordValidationResult?.message || '');
       setPasswordErrorMessageVisible(true);
     } else {
-      passwordErrorMessageType(passwordValidationResult?.message || '');
       setPasswordErrorMessageVisible(false);
     }
+
+    setIsLoading(false); // ✅ Now it executes after everything finishes
   };
 
   // Pass user data to the server
@@ -99,16 +125,8 @@ const RegisterScreen = () => {
       const result = await user_register({
         emailPhone: emailPhone.toLocaleLowerCase(),
       });
-      if (result.status === 200) {
-        navigation.navigate('VerifyOTP', {
-          EmailPhone: emailPhone,
-          Password: password,
-          Purpose: 'register',
-        } as any);
-      } else if (result.status === 403) {
-        emailPhoneErrorMessageType('User already exist!');
-        setEmailPhoneErrorMessageVisible(true);
-      }
+
+      return result;
     } catch (error) {
       console.error('Error registering user:', error);
       console.error(error);
@@ -147,11 +165,9 @@ const RegisterScreen = () => {
               value={emailPhone}
               style={styles.inputField}
             />
-            {emailPhoneErrorMessageVisible ? (
-              <Text style={{color: 'red', marginTop: 5}}>
-                {emailPhoneErrorMessage}
-              </Text>
-            ) : null}
+            <Text style={{color: 'red', fontSize: 12}}>
+              {emailPhoneErrorMessage}
+            </Text>
           </View>
           <View style={styles.inputFieldContainer}>
             <Text style={styles.inputFieldLebel}>Password</Text>
@@ -180,9 +196,14 @@ const RegisterScreen = () => {
           </View>
           <View style={styles.sendOTPContainer}>
             <TouchableOpacity
-              style={styles.sendOTP}
-              onPress={handlesendOTPButton}>
-              <Text style={styles.sendOTPLebel}>Send OTP</Text>
+              style={[styles.sendOTP, isLoading && {opacity: 0.6}]}
+              onPress={handlesendOTPButton}
+              disabled={isLoading}>
+              {isLoading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.sendOTPLebel}>Send OTP</Text>
+              )}
             </TouchableOpacity>
           </View>
           <View style={styles.loginContainer}>
@@ -196,10 +217,46 @@ const RegisterScreen = () => {
             </Pressable>
           </View>
         </View>
-        <TouchableOpacity onPress={handleSkipButton} style={styles.skipBtn}>
-          <Text style={styles.skipBtnLebel}>Skip</Text>
-          <ChevronLeftLight width={16} height={16} style={styles.skipIcon} />
-        </TouchableOpacity>
+        {skipLoading ? (
+          <ActivityIndicator
+            style={{marginTop: 20}}
+            size="small"
+            color="#000"
+          />
+        ) : (
+          <TouchableOpacity onPress={handleSkipButton} style={styles.skipBtn}>
+            <Text style={styles.skipBtnLebel}>Skip</Text>
+            <ChevronLeftLight width={16} height={16} style={styles.skipIcon} />
+          </TouchableOpacity>
+        )}
+
+        <View style={{flex: 1, alignItems: 'center', paddingBottom: 0}}>
+          {/* YOUR ENTIRE container here */}
+          <View style={styles.container}>{/* all form stuff */}</View>
+
+          {/* 📞 Contact Info - move this INSIDE the ScrollView */}
+          <TouchableOpacity
+            onPress={() => {
+              Clipboard.setString('9365646114');
+              Toast.show({
+                type: 'success',
+                text1: 'Copied to clipboard',
+                text2: 'Phone number copied!',
+              });
+            }}>
+            <View
+              style={{
+                padding: 10,
+                backgroundColor: '#e0f7fa',
+                borderRadius: 8,
+                marginTop: 20,
+              }}>
+              <Text style={{fontSize: 16, color: '#00796b'}}>
+                📱 Contact us: 9365646114
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </View>
       </View>
     </ScrollView>
   );

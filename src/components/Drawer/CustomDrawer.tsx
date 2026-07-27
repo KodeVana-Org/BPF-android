@@ -1,6 +1,8 @@
 /* eslint-disable react/react-in-jsx-scope */
 import {DrawerContentScrollView} from '@react-navigation/drawer';
+import {asyncStoragePersister} from '../../../App';
 import {
+  ActivityIndicator,
   Dimensions,
   Image,
   Pressable,
@@ -10,6 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import {useQueryClient} from '@tanstack/react-query';
 import LinearGradient from 'react-native-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {AppContext} from '../../navigator/AppContext';
@@ -20,6 +23,7 @@ import {StackNavigationProp} from '@react-navigation/stack';
 import {DrawerParamList} from '../../navigator/DrawerNavigator';
 import useFetchUserData from '../../data/userData';
 import {RootStackParamList} from '../../navigator/RootNavigator';
+import {Toast} from 'react-native-toast-message/lib/src/Toast';
 
 const windowHeight = Dimensions.get('window').height;
 
@@ -28,9 +32,11 @@ function CustomDrawer(props: any) {
   const [userDP, setUserDP] = useState(false);
   const [userName, setUserName] = useState('');
   const [token, setToken] = useState<string | null>(null);
+  const [laoding, setLoading] = useState(false);
   const drawerNavigation =
     useNavigation<StackNavigationProp<DrawerParamList>>();
   const {userData} = useFetchUserData();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -190,13 +196,39 @@ function CustomDrawer(props: any) {
           </TouchableOpacity>
         </ScrollView>
       </View>
-      {token ? (
+      {laoding ? (
+        <ActivityIndicator size="small" color="#000" style={{margin: 10}} />
+      ) : token ? (
         <View style={styles.bottomContainer}>
           <TouchableOpacity
             style={styles.navItemContainer}
-            onPress={() => {
-              AsyncStorage.removeItem('AccessToken');
-              setNavigateToHome(false);
+            onPress={async () => {
+              setLoading(true);
+              try {
+                // 1. Clear stored token
+                await AsyncStorage.removeItem('AccessToken');
+                await AsyncStorage.removeItem('userProfile');
+                // await queryClient.removeQueries({queryKey: ['userProfile']});
+                // 2. Clear React Query cache
+                await queryClient.clear();
+                await asyncStoragePersister.removeClient();
+
+                // 3. Reset navigation and state
+                setNavigateToHome(false);
+
+                navigationJD.navigate('Login');
+                // navigationJD.reset({
+                //   index: 0,
+                //   routes: [{name: 'Login'}],
+                // });
+              } catch (error) {
+                Toast.show({
+                  type: 'error',
+                  text1: 'Logout error',
+                });
+              } finally {
+                setLoading(false);
+              }
             }}>
             <Text style={styles.logoutText}>Logout</Text>
             <LogoutIcon />
@@ -207,7 +239,13 @@ function CustomDrawer(props: any) {
           <TouchableOpacity
             style={styles.navItemContainer}
             onPress={() => {
-              setNavigateToHome(false);
+              setLoading(true);
+              try {
+                setNavigateToHome(false);
+                navigationJD.navigate('Login');
+              } finally {
+                setLoading(false);
+              }
             }}>
             <Text style={styles.logoutText}>Login</Text>
             {/* <LogoutIcon /> */}

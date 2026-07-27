@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React, { useContext, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -11,16 +11,17 @@ import {
   ScrollView,
   Image,
   ActivityIndicator,
+  Clipboard,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import ChevronLeftLight from '../../assets/icons/ChevronLeftLight';
 import EyeClose from '../../assets/icons/EyeClose';
 import EyeOpen from '../../assets/icons/EyeOpen';
-import {useNavigation} from '@react-navigation/native';
-import {StackNavigationProp} from '@react-navigation/stack';
-import {AuthParamList} from '../../navigator/AuthNavigator';
-import {AppContext} from '../../navigator/AppContext';
-import {user_login_pass} from '../../api/auth_apis';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { AuthParamList } from '../../navigator/AuthNavigator';
+import { AppContext } from '../../navigator/AppContext';
+import { user_login_pass } from '../../api/auth_apis';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   validateEmailPhone,
@@ -33,7 +34,8 @@ const windowHeight = Dimensions.get('window').height;
 
 const LoginPassScreen = () => {
   const navigation = useNavigation<StackNavigationProp<AuthParamList>>();
-    const [isLoading, setIsLoading] = useState(false)
+  const [skipLoading, setSkipLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Handle hide password
   const [hidePassword, setHidePassword] = useState(true);
@@ -42,8 +44,9 @@ const LoginPassScreen = () => {
   };
 
   /// Handle navigation to HomeScreen
-  const {setNavigateToHome} = useContext(AppContext);
+  const { setNavigateToHome } = useContext(AppContext);
   const handleNavigateToHome = () => {
+    setSkipLoading(true);
     setNavigateToHome(true);
   };
 
@@ -52,8 +55,10 @@ const LoginPassScreen = () => {
   const [password, setPassword] = useState('');
   const handleEmailPhoneInputChange = (text: string) => {
     setEmailPhone(text.trim());
+    setEmailPhoneErrorMessageVisible(false);
   };
   const handlePasswordInputChange = (text: string) => {
+    setPasswordErrorMessageVisible(false);
     setPassword(text.trim());
   };
 
@@ -72,42 +77,42 @@ const LoginPassScreen = () => {
     useState(false);
 
   // Handle form data validation
-const handleLoginButton = async () => {
-  const emailPhoneValidationResult = validateEmailPhone(emailPhone);
-  const passwordValidationResult = validatePassword(password);
+  const handleLoginButton = async () => {
+    const emailPhoneValidationResult = validateEmailPhone(emailPhone);
+    const passwordValidationResult = validatePassword(password);
 
-  // Show validation messages
-  if (!emailPhoneValidationResult?.success) {
-    emailPhoneErrorMessageType(emailPhoneValidationResult?.message || '');
-    setEmailPhoneErrorMessageVisible(true);
-  } else {
-    emailPhoneErrorMessageType('');
-    setEmailPhoneErrorMessageVisible(false);
-  }
-
-  if (!passwordValidationResult?.success) {
-    passwordErrorMessageType(passwordValidationResult?.message || '');
-    setPasswordErrorMessageVisible(true);
-  } else {
-    passwordErrorMessageType('');
-    setPasswordErrorMessageVisible(false);
-  }
-
-  // If both are valid, proceed
-  if (
-    emailPhoneValidationResult?.success &&
-    passwordValidationResult?.success
-  ) {
-    try {
-      setIsLoading(true);           // Start spinner and disable button
-      await passUserData();         // Your login API call
-    } catch (error) {
-      console.error('Login failed:', error);
-    } finally {
-      setIsLoading(false);          // Re-enable button after done
+    // Show validation messages
+    if (!emailPhoneValidationResult?.success) {
+      emailPhoneErrorMessageType(emailPhoneValidationResult?.message || '');
+      setEmailPhoneErrorMessageVisible(true);
+    } else {
+      emailPhoneErrorMessageType('');
+      setEmailPhoneErrorMessageVisible(false);
     }
-  }
-};
+
+    if (!passwordValidationResult?.success) {
+      passwordErrorMessageType(passwordValidationResult?.message || '');
+      setPasswordErrorMessageVisible(true);
+    } else {
+      passwordErrorMessageType('');
+      setPasswordErrorMessageVisible(false);
+    }
+
+    // If both are valid, proceed
+    if (
+      emailPhoneValidationResult?.success &&
+      passwordValidationResult?.success
+    ) {
+      try {
+        setIsLoading(true); // Start spinner and disable button
+        await passUserData(); // Your login API call
+      } catch (error) {
+        console.error('Login failed:', error);
+      } finally {
+        setIsLoading(false); // Re-enable button after done
+      }
+    }
+  };
 
   /// Pass user data to the server
   const passUserData = async () => {
@@ -120,11 +125,11 @@ const handleLoginButton = async () => {
         showToast();
         handleNavigateToHome();
         storeToken(result.data.token);
-      } else if (result.status === 404) {
-        emailPhoneErrorMessageType('Wrong input details!');
+      } else if (result.status === '404') {
+        emailPhoneErrorMessageType('User not found!');
         setEmailPhoneErrorMessageVisible(true);
-      } else if (result.status === 401) {
-        passwordErrorMessageType('Wrong password!');
+      } else if (result.status === '401') {
+        passwordErrorMessageType('Invalid password!');
         setPasswordErrorMessageVisible(true);
       } else if (result) {
       }
@@ -161,8 +166,8 @@ const handleLoginButton = async () => {
           <LinearGradient
             style={styles.gradient}
             colors={['#FF671F', '#fff', '#046A38']}
-            start={{x: 0, y: 0}}
-            end={{x: 0, y: 1}}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
           />
         </View>
         <View style={styles.flagContainer}>
@@ -188,7 +193,7 @@ const handleLoginButton = async () => {
               style={styles.inputField}
             />
             {emailPhoneErrorMessageVisible ? (
-              <Text style={{color: 'red', marginTop: 5}}>
+              <Text style={{ color: 'red', marginTop: 5 }}>
                 {emailPhoneErrorMessage}
               </Text>
             ) : null}
@@ -214,7 +219,7 @@ const handleLoginButton = async () => {
               </Pressable>
             </View>
             {passwordErrorMessageVisible ? (
-              <Text style={{color: 'red', marginTop: 5}}>
+              <Text style={{ color: 'red', marginTop: 5 }}>
                 {passwordErrorMessage}
               </Text>
             ) : null}
@@ -224,19 +229,18 @@ const handleLoginButton = async () => {
             onPress={() => navigation.navigate('ForgotPass')}>
             <Text style={styles.forgotPassLebel}>Forgot Password?</Text>
           </Pressable>
-            <View style={styles.loginBtnContainer}>
-              <TouchableOpacity
-                style={[styles.loginBtn, isLoading && styles.disabledButton]}
-                onPress={handleLoginButton}
-                disabled={isLoading}>
-
-                {isLoading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.loginBtnLebel}>Login</Text>
-                )}
-              </TouchableOpacity>
-            </View>
+          <View style={styles.loginBtnContainer}>
+            <TouchableOpacity
+              style={[styles.loginBtn, isLoading && styles.disabledButton]}
+              onPress={handleLoginButton}
+              disabled={isLoading}>
+              {isLoading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.loginBtnLebel}>Login</Text>
+              )}
+            </TouchableOpacity>
+          </View>
           <View style={styles.registerContainer}>
             <Text style={styles.registerBtnLebel}>Don't have an account? </Text>
             <Pressable style={styles.registerBtn}>
@@ -255,10 +259,48 @@ const handleLoginButton = async () => {
             </Text>
           </Pressable>
         </View>
-        <TouchableOpacity onPress={handleNavigateToHome} style={styles.skipBtn}>
-          <Text style={styles.skipBtnLebel}>Skip</Text>
-          <ChevronLeftLight width={16} height={16} style={styles.skipIcon} />
-        </TouchableOpacity>
+        {skipLoading ? (
+          <ActivityIndicator
+            style={{ marginTop: 20 }}
+            size="small"
+            color="#000"
+          />
+        ) : (
+          <TouchableOpacity
+            onPress={handleNavigateToHome}
+            style={styles.skipBtn}>
+            <Text style={styles.skipBtnLebel}>Skip</Text>
+            <ChevronLeftLight width={16} height={16} style={styles.skipIcon} />
+          </TouchableOpacity>
+        )}
+
+        <View style={{ flex: 1, alignItems: 'center', paddingBottom: 0 }}>
+          {/* YOUR ENTIRE container here */}
+          <View style={styles.container}>{/* all form stuff */}</View>
+
+          {/* 📞 Contact Info - move this INSIDE the ScrollView */}
+          <TouchableOpacity
+            onPress={() => {
+              Clipboard.setString('9365646114');
+              Toast.show({
+                type: 'success',
+                text1: 'Copied to clipboard',
+                text2: 'Phone number copied!',
+              });
+            }}>
+            <View
+              style={{
+                padding: 10,
+                backgroundColor: '#e0f7fa',
+                borderRadius: 8,
+                marginTop: 20,
+              }}>
+              <Text style={{ fontSize: 16, color: '#00796b' }}>
+                📱 Contact us: 9365646114
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </View>
       </View>
     </ScrollView>
   );
@@ -267,10 +309,9 @@ const handleLoginButton = async () => {
 export default LoginPassScreen;
 
 const styles = StyleSheet.create({
-
-    disabledButton: {
-      opacity: 0.6,
-    },
+  disabledButton: {
+    opacity: 0.6,
+  },
   container: {
     height: windowHeight,
     flex: 1,
@@ -338,12 +379,12 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     ...(Platform.OS === 'ios'
       ? {
-          shadowColor: '#000',
-          shadowOffset: {width: 2, height: 4},
-          shadowOpacity: 0.2,
-          shadowRadius: 4,
-        }
-      : {elevation: 4}),
+        shadowColor: '#000',
+        shadowOffset: { width: 2, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+      }
+      : { elevation: 4 }),
   },
   inputFieldContainer: {
     backgroundColor: '#fff',
@@ -351,12 +392,12 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     ...(Platform.OS === 'ios'
       ? {
-          shadowColor: '#000',
-          shadowOffset: {width: 2, height: 4},
-          shadowOpacity: 0.2,
-          shadowRadius: 4,
-        }
-      : {elevation: 3}),
+        shadowColor: '#000',
+        shadowOffset: { width: 2, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+      }
+      : { elevation: 3 }),
   },
   inputFieldLebel: {
     color: '#000',
@@ -462,6 +503,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   skipIcon: {
-    transform: [{rotate: '180deg'}],
+    transform: [{ rotate: '180deg' }],
   },
 });

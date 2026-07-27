@@ -9,17 +9,17 @@ import {
   RefreshControl,
 } from 'react-native';
 import Animated from 'react-native-reanimated';
-import {GestureHandlerRootView} from 'react-native-gesture-handler';
-import {SafeAreaProvider} from 'react-native-safe-area-context';
-import {SystemBars} from 'react-native-bars';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SystemBars } from 'react-native-bars';
 
 import Header from '../../components/Header/Header';
 import BannerCarousal from '../../components/Corousel/BannerCorousal';
 import PostFlatList from '../../components/PostFlatlist/PostFlatList';
-import {useNavigation} from '@react-navigation/native';
-import {StackNavigationProp} from '@react-navigation/stack';
-import {BottomTabParamList} from '../../navigator/BottomTabNavigator';
-import {DrawerParamList} from '../../navigator/DrawerNavigator';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { BottomTabParamList } from '../../navigator/BottomTabNavigator';
+import { DrawerParamList } from '../../navigator/DrawerNavigator';
 import GalleryFlatlist from '../../components/GalleryFlatlist/GalleryFlatlist';
 import useFetchUserData from '../../data/userData';
 import FAB from '../../components/FloatingActionButton/FAB';
@@ -27,12 +27,12 @@ import FAB_Poster from '../../components/FloatingActionButton/FAB_Poster';
 import LinearGradient from 'react-native-linear-gradient';
 import JoinDonate from '../../components/Join_Donate/JoinDonate';
 
-const HomeScreen = ({navigation}: any) => {
+const HomeScreen = ({ navigation }: any) => {
   const bottomNavigation =
     useNavigation<StackNavigationProp<BottomTabParamList>>();
   const drawerNavigation =
     useNavigation<StackNavigationProp<DrawerParamList>>();
-  const {admin, postAdmin} = useFetchUserData();
+  const { admin, postAdmin } = useFetchUserData();
 
   // Refresh control
   const [refreshing, setRefreshing] = React.useState(false);
@@ -51,7 +51,7 @@ const HomeScreen = ({navigation}: any) => {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }>
-        <GestureHandlerRootView style={{flex: 1}}>
+        <GestureHandlerRootView style={{ flex: 1 }}>
           {/* If you're not using react-native-bars, you can remove SystemBars */}
           <SystemBars animated={true} barStyle={'light-content'} />
           <Animated.View style={[styles.container]}>
@@ -59,6 +59,7 @@ const HomeScreen = ({navigation}: any) => {
             <BannerCarousal />
             {/* Join Donate */}
             <JoinDonate />
+
             {/* PostList */}
             <View style={styles.postListContainer}>
               <View style={styles.headerNav}>
@@ -75,11 +76,13 @@ const HomeScreen = ({navigation}: any) => {
                   </TouchableOpacity>
                 </View>
               </View>
-              <ScrollView horizontal style={styles.image}>
-                <PostFlatList horizontal={true} marginType="right" />
-              </ScrollView>
+              {/* <ScrollView horizontal style={styles.image}> */}
+              <PostFlatList horizontal={true} marginType="right" />
+              {/* </ScrollView> */}
             </View>
+
             {/* Gallery */}
+            {/* Gallery Section on Home Screen */}
             <View style={styles.galleryListContainer}>
               <View style={styles.headerNav}>
                 <View>
@@ -95,17 +98,17 @@ const HomeScreen = ({navigation}: any) => {
                   </TouchableOpacity>
                 </View>
               </View>
-              <ScrollView horizontal style={styles.image}>
-                <GalleryFlatlist horizontal={true} marginType="right" />
-              </ScrollView>
+
+              {/* FlatList manages its own horizontal scrolling */}
+              <GalleryFlatlist horizontal={true} marginType="right" isHomeScreen={true} />
             </View>
             {/* Temporery filer section */}
             <View style={styles.tempSection}>
               <LinearGradient
                 style={styles.gradient}
                 colors={['#FF671F', '#fff', '#046A38']}
-                start={{x: 0, y: 0}}
-                end={{x: 0, y: 1}}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
               />
               <View style={styles.tempTextContainer}>
                 <Text style={styles.tempText}>Peace</Text>
@@ -160,6 +163,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
     borderRadius: 7,
     marginTop: 7,
+    marginBottom: 4,
     padding: 0,
     width: 80,
     backgroundColor: '#046A38',
@@ -168,7 +172,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#FFF',
     paddingHorizontal: 10,
-    paddingVertical: 7,
+    paddingVertical: 5,
     margin: 0,
   },
   tempSection: {

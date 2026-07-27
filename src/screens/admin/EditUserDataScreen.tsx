@@ -66,7 +66,6 @@ const EditUserDataScreen = ({route}: any) => {
           district,
           userType,
         } = response.data;
-        console.log('USER DATA', response.data); // TODO remove
         if (
           userID !== null &&
           userID !== undefined &&

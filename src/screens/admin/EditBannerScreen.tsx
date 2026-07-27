@@ -11,28 +11,95 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useState} from 'react';
+import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import NavHeader from '../../components/Header/NavHeader';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import ImagePicker from 'react-native-image-crop-picker';
-import {get_banners} from '../../api/app_data_apis';
-import { removeBanner } from '../../api/auth_apis';
-import ApiManager from '../../api/ApiManager';
+import {create_banner, get_banners} from '../../api/app_data_apis';
+import {removeBanner} from '../../api/auth_apis';
 import Toast from 'react-native-toast-message';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 export default function EditBannerScreen() {
   const [postImageUrl, setPostImageUrl] = useState(null);
   const [showUploadDialog, setShowUploadDialog] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [uploadBannerMessage, setUploadBannerMessage] =
     useState('Upload new banner');
   const [removingBannerId, setRemovingBannerId] = useState(null);
 
+  const queryClient = useQueryClient();
+
+  const {
+    data: bannerData,
+    isLoading: isBannerLoading,
+    isError,
+  } = useQuery({
+    queryKey: ['banner'],
+    queryFn: get_banners,
+  });
+
+  const banners = bannerData?.data?.image?.slice()?.reverse() || [];
+
+  // Toast
+  const showToast = (type = 'success', text = '') => {
+    Toast.show({
+      type,
+      text1: text,
+    });
+  };
+
+  const {mutate: createBanner, isPending: isCreating} = useMutation({
+    mutationFn: create_banner,
+    onSuccess: () => {
+      Toast.hide();
+      Toast.show({
+        type: 'success',
+        text1: 'Banner uploaded successfully',
+      });
+
+      // Reset form state
+      setPostImageUrl(null);
+      setShowUploadDialog(false);
+      setUploadBannerMessage('Banner uploaded successfully!');
+
+      // Refetch posts
+      queryClient.invalidateQueries({queryKey: ['banner']});
+    },
+    onError: () => {
+      Toast.hide();
+      Toast.show({
+        type: 'error',
+        text1: 'Upload failed',
+        text2: 'Check your network and try again.',
+      });
+      console.error('Upload error:', isError);
+      showToast('error', 'Something went wrong. Try again later.');
+    },
+  });
+
+  const removeBannerMutation = useMutation({
+    mutationFn: (id: string) => removeBanner(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({queryKey: ['banner']});
+      Toast.show({
+        type: 'success',
+        text1: 'Banner deleted successfully',
+      });
+    },
+    onError: error => {
+      console.error('Unexpected error removing banner:', error);
+      showToast('error', 'Banner deletion failed');
+    },
+  });
+
   // Select photo from library
   const openImagePicker = () => {
     ImagePicker.openPicker({
-      width: 300,
-      height: 300,
       cropping: true,
+      compressImageQuality: 1,
+      mediaType: 'photo',
     }).then(image => {
       setPostImageUrl(image.path);
       setShowUploadDialog(true);
@@ -45,113 +112,59 @@ export default function EditBannerScreen() {
     setShowUploadDialog(false);
   };
 
-  // Pass banner to the server
-  // TODO: potential issue retried to upload in catch block
   const uploadBanner = async () => {
+    if (!postImageUrl) return;
+
+    setIsUploading(true);
+
+    const uri = postImageUrl.startsWith('file://')
+      ? postImageUrl
+      : `file://${postImageUrl}`;
+
     const formData = new FormData();
     formData.append('image', {
-      uri: postImageUrl,
+      uri,
       type: 'image/jpeg',
       name: 'bannerImage.jpg',
     });
+
     try {
-      const result = await ApiManager.post('api/upload-hero', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      if (result.status === 200) {
-        console.log('Banner uploaded successfully!');
-        setPostImageUrl(null);
-        setShowUploadDialog(false);
-        setUploadBannerMessage('Banner uploaded successfully!');
-        fetchBanners();
-      } else {
-        console.log('Banner not uploaded, please try again!');
-      }
-    } catch (error) {
-      for (let i = 1; i < 3; i++) {
-        if (postImageUrl != null) {
-          const retryResult = await ApiManager.post(
-            'api/upload-hero',
-            formData,
-            {
-              headers: {
-                'Content-Type': 'multipart/form-data',
-              },
-            },
-          );
-          if (retryResult.status === 200) {
-            console.log('Banner uploaded successfully!');
-            showToast();
-            setPostImageUrl(null);
-            setShowUploadDialog(false);
-            setUploadBannerMessage('Banner uploaded successfully!');
-            fetchBanners();
-            break;
-          }
-        }
-      }
+      await createBanner(formData);
+    } catch (err) {
+      console.log('Upload error:', err?.response || err);
+    } finally {
+      setIsUploading(false);
     }
   };
 
-    const handleRemoveBanner = async(item: string) => {
-        const id =  item._id
-        try {
-        setRemovingBannerId(id)
-        const result = await removeBanner(id);
-
-        if (result?.status === 200) {
-            setGetBanners(prev => prev.filter(banner => banner._id !== id));
-              Toast.show({
-                type: 'success',
-                text1: 'Banner deleted successfully',
-              });
-        } else {
-             console.warn('Failed to remove banner:', result?.data?.message || 'Unknown error');}
-        } catch (error) {
-           console.error('Unexpected error removing banner:', error);
-        } finally {
-            setRemovingBannerId(null);
-        }
-    }
-
-
-  // fetch banner
-  const [getBanners, setGetBanners] = useState([]);
-  const fetchBanners = async () => {
-    try {
-      const response = await get_banners();
-      if (response.data) {
-        setGetBanners(response.data.image.reverse());
-      } else {
-        console.error('Banners data not found in response:', response);
-      }
-    } catch (error) {
-      console.error('Error fetching banners:', error);
-    }
+  const handleRemoveBanner = (item: any) => {
+    const id = item._id;
+    setRemovingBannerId(id);
+    removeBannerMutation.mutate(id, {
+      onSettled: () => setRemovingBannerId(null),
+    });
   };
-  useEffect(() => {
-    fetchBanners();
-  }, []);
 
   // Refresh control
   const [refreshing, setRefreshing] = React.useState(false);
-  const onRefresh = React.useCallback(() => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    fetchBanners();
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 2000);
-  }, []);
+    await queryClient.invalidateQueries({queryKey: ['banner']});
+    setRefreshing(false);
+  }, [queryClient]);
 
-  // Toast
-  const showToast = () => {
-    Toast.show({
-      type: 'success',
-      text1: 'Banner uploaded successfully',
-    });
-  };
+  if (isBannerLoading) {
+    return (
+      <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#000" />
+        </View>
+      </SafeAreaView>
+    );
+  }
+  if (isError) {
+    return <Text>Error loading banners</Text>;
+  }
 
   return (
     <SafeAreaProvider style={styles.container}>
@@ -170,9 +183,18 @@ export default function EditBannerScreen() {
               <Image source={{uri: postImageUrl}} style={styles.postImage} />
               <View style={styles.buttonContainer}>
                 <TouchableOpacity
-                  style={[styles.formButton, styles.uploadButton]}
-                  onPress={uploadBanner}>
-                  <Text style={styles.buttonText}>Upload</Text>
+                  style={[
+                    styles.formButton,
+                    styles.uploadButton,
+                    isCreating && styles.disabledButton,
+                  ]}
+                  onPress={uploadBanner}
+                  disabled={isCreating}>
+                  {isCreating ? (
+                    <ActivityIndicator color="#fff" size="small" />
+                  ) : (
+                    <Text style={styles.buttonText}>Upload</Text>
+                  )}
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.formButton, styles.cancelButton]}
@@ -198,7 +220,7 @@ export default function EditBannerScreen() {
           {/* Display current banner images */}
           <View style={styles.bannerContainer}>
             <FlatList
-              data={getBanners}
+              data={banners}
               horizontal={false}
               showsVerticalScrollIndicator={false}
               keyExtractor={(item, index) => index.toString()}
@@ -216,20 +238,19 @@ export default function EditBannerScreen() {
                     style={styles.bannerImage}
                   />
                   {/* 🛑 Remove Button Overlaid on Image */}
-            <TouchableOpacity
-              style={[
-                styles.removeButton,
-                removingBannerId === item._id && styles.disabledButton
-              ]}
-              onPress={() => handleRemoveBanner(item)}
-              disabled={removingBannerId === item._id}
-            >
-              {removingBannerId === item._id ? (
-                <ActivityIndicator color="#fff" size="small" />
-              ) : (
-                <Text style={styles.removeButtonText}>Remove</Text>
-              )}
-            </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.removeButton,
+                      removingBannerId === item._id && styles.disabledButton,
+                    ]}
+                    onPress={() => handleRemoveBanner(item)}
+                    disabled={removingBannerId === item._id}>
+                    {removingBannerId === item._id ? (
+                      <ActivityIndicator color="#fff" size="small" />
+                    ) : (
+                      <Text style={styles.removeButtonText}>Remove</Text>
+                    )}
+                  </TouchableOpacity>
                 </View>
               )}
             />
@@ -241,28 +262,35 @@ export default function EditBannerScreen() {
 }
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff', // optional for visibility
+  },
   container: {
     flex: 1,
   },
 
-    disabledButton: {
-      opacity: 0.6,
-    },
-removeButton: {
-  position: 'absolute',
-  top: 10,
-  right: 10,
-  backgroundColor: 'rgba(255, 0, 0, 0.8)',
-  paddingVertical: 7,
-  paddingHorizontal: 9,
-  borderRadius: 5,
-},
+  disabledButton: {
+    opacity: 0.6,
+  },
 
-removeButtonText: {
-  color: '#fff',
-  fontWeight: 'bold',
-  fontSize: 12,
-},
+  removeButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: 'rgba(255, 0, 0, 0.8)',
+    paddingVertical: 7,
+    paddingHorizontal: 9,
+    borderRadius: 5,
+  },
+
+  removeButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 12,
+  },
   editBannerContainer: {
     marginTop: 10,
     paddingTop: 10,

@@ -1,5 +1,7 @@
 /////////////////////** VALIDATE EMAIL-PHONE **////////////////////////
 
+import {Toast} from 'react-native-toast-message/lib/src/Toast';
+
 export function validateEmailPhone(emailPhone: string) {
   // const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
   // const phoneRegex = /^\d{10}$/;
@@ -30,6 +32,12 @@ export function validateEmailPhone(emailPhone: string) {
       return result;
     }
   } else if (!/^\d{10}$/.test(emailPhone)) {
+    Toast.show({
+      type: 'info',
+      text1: 'phone number not supported ',
+      text2: 'please use your  email address to conitnue',
+    });
+    return; //TODO: remove it later
     result.message = 'Please enter a valid phone number!';
     result.success = false;
   } else {

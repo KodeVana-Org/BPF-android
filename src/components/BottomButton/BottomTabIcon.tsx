@@ -5,6 +5,7 @@ import PostIcon from '../../assets/icons/Gallery.js';
 import VideoIcon from '../../assets/icons/Video.js';
 import LiveIcon from '../../assets/icons/Live.js';
 import UserGroupIcon from '../../assets/icons/Conference.js';
+import EventIcon from '../../assets/icons/Event.js';
 
 interface Props {
   route: string;
@@ -29,6 +30,14 @@ const BottomTabIcon = ({route, isFocused}: Props) => {
       case 'Post':
         return (
           <PostIcon
+            width={width}
+            height={height}
+            fill={isFocused ? '#FF671F' : '#a8a8a8'}
+          />
+        );
+      case 'Event':
+        return (
+          <EventIcon
             width={width}
             height={height}
             fill={isFocused ? '#FF671F' : '#a8a8a8'}

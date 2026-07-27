@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import EyeClose from '../../assets/icons/EyeClose';
@@ -35,6 +36,7 @@ const RegisterScreen = ({route}: Props) => {
   // Handle hide password
   const [hidePassword, setHidePassword] = useState(true);
   const [hideConfirmPassword, setHideConfirmPassword] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Handle hide password
   const toggleHidePassword = () => {
@@ -104,11 +106,13 @@ const RegisterScreen = ({route}: Props) => {
 
   /// Pass user data to the server
   const passUserData = async () => {
+    setIsLoading(true);
     try {
       const result = await set_password({
         emailPhone: emailPhone.toLocaleLowerCase(),
         password: password,
       });
+      console.log('RES:: ', result);
       if (result.status === 200) {
         showToast();
         handleNavigateToHome();
@@ -120,6 +124,8 @@ const RegisterScreen = ({route}: Props) => {
     } catch (error) {
       console.log('Error logging user:', error);
       console.log(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -211,8 +217,15 @@ const RegisterScreen = ({route}: Props) => {
             ) : null}
           </View>
           <View style={styles.saveBtnContainer}>
-            <TouchableOpacity style={styles.saveBtn} onPress={handleSaveButton}>
-              <Text style={styles.saveBtnLebel}>Save</Text>
+            <TouchableOpacity
+              style={[styles.saveBtn, isLoading && {opacity: 0.6}]}
+              onPress={handleSaveButton}
+              disabled={isLoading}>
+              {isLoading ? (
+                <ActivityIndicator color="#fff" size="small" />
+              ) : (
+                <Text style={styles.saveBtnLebel}>Save</Text>
+              )}
             </TouchableOpacity>
           </View>
         </View>

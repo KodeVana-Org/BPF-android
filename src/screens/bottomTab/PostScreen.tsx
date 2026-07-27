@@ -12,32 +12,24 @@ import FAB_Poster from '../../components/FloatingActionButton/FAB_Poster';
 
 const PostScreen = ({navigation}: any) => {
   const {admin, postAdmin} = useFetchUserData();
-
-  // Refresh control
   const [refreshing, setRefreshing] = React.useState(false);
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 2000);
+    setTimeout(() => setRefreshing(false), 2000);
   }, []);
 
   return (
     <SafeAreaProvider>
       <Header title="Posts" drawerNavigation={navigation} />
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }>
-        <GestureHandlerRootView style={{flex: 1}}>
-          {/* If you're not using react-native-bars, you can remove SystemBars */}
-          <SystemBars animated={true} barStyle={'light-content'} />
-          <Animated.View style={styles.container}>
-            <PostFlatList horizontal={false} marginType="bottom" />
-          </Animated.View>
-        </GestureHandlerRootView>
-      </ScrollView>
+      <GestureHandlerRootView style={{flex: 1}}>
+        <SystemBars animated={true} barStyle={'light-content'} />
+        <PostFlatList
+          horizontal={false}
+          marginType="bottom"
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+        />
+      </GestureHandlerRootView>
       {admin ? <FAB /> : postAdmin ? <FAB_Poster /> : null}
     </SafeAreaProvider>
   );
