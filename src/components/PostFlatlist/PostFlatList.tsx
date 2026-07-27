@@ -20,6 +20,9 @@ import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 
 const { width } = Dimensions.get('window');
 
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+
 const timeAgo = (dateString: string) => {
   if (!dateString) return '';
   const diffMs = Date.now() - new Date(dateString).getTime();
@@ -151,6 +154,11 @@ const PostFlatList = ({
         showsHorizontalScrollIndicator={false}
         showsVerticalScrollIndicator={false}
         keyExtractor={(item) => item.id}
+        onScroll={() => {
+          if (activeMenuPostId) {
+            setActiveMenuPostId(null);
+          }
+        }}
         contentContainerStyle={{
           paddingRight: horizontal ? 16 : 0,
           paddingBottom: horizontal ? 0 : 16,
@@ -172,6 +180,14 @@ const PostFlatList = ({
         }}
         renderItem={({ item }) => (
           <View style={[styles.card, calculateMargin()]}>
+            {/* Backdrop rendered at card level to cover the full screen when open */}
+            {activeMenuPostId === item.id && (
+              <Pressable
+                style={styles.fullScreenBackdrop}
+                onPress={() => setActiveMenuPostId(null)}
+              />
+            )}
+
             {/* Header */}
             <View style={styles.cardHeader}>
               <View style={styles.avatar}>
@@ -261,12 +277,31 @@ const PostFlatList = ({
             )}
           </View>
         )}
+      //hrere
       />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  fullScreenBackdrop: {
+    position: 'absolute',
+    top: -SCREEN_HEIGHT * 2,
+    left: -SCREEN_WIDTH * 2,
+    right: -SCREEN_WIDTH * 2,
+    bottom: -SCREEN_HEIGHT * 2,
+    backgroundColor: 'transparent',
+    zIndex: 99,
+  },
+  backdrop: {
+    position: 'absolute',
+    top: -SCREEN_HEIGHT,
+    left: -SCREEN_WIDTH,
+    right: -SCREEN_WIDTH,
+    bottom: -SCREEN_HEIGHT,
+    backgroundColor: 'transparent',
+    zIndex: 5,
+  },
   container: {
     flex: 1,
     alignItems: 'center',
@@ -392,7 +427,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 4,
     elevation: 5,
-    width: 110,
+    width: 115,
     overflow: 'hidden',
   },
   dropdownItem: {
