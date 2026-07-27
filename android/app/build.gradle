@@ -86,8 +86,13 @@ android {
         applicationId "com.kodevana.bpf"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 37
-        versionName "1.1.1"
+        versionCode 41
+        versionName "1.1.5"
+        externalNativeBuild {
+            cmake {
+                arguments "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
+            }
+        }
     }
     signingConfigs {
         release {
@@ -115,6 +120,18 @@ android {
             signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+        }
+    }
+    // old package support disable or what
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging = false
+        }
+    }
+    packaging {
+        jniLibs {
+            useLegacyPackaging = false
+            pickFirst '**/libaosl.so'
         }
     }
 }

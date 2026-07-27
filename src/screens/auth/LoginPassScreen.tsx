@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React, { useContext, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -17,11 +17,11 @@ import LinearGradient from 'react-native-linear-gradient';
 import ChevronLeftLight from '../../assets/icons/ChevronLeftLight';
 import EyeClose from '../../assets/icons/EyeClose';
 import EyeOpen from '../../assets/icons/EyeOpen';
-import {useNavigation} from '@react-navigation/native';
-import {StackNavigationProp} from '@react-navigation/stack';
-import {AuthParamList} from '../../navigator/AuthNavigator';
-import {AppContext} from '../../navigator/AppContext';
-import {user_login_pass} from '../../api/auth_apis';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { AuthParamList } from '../../navigator/AuthNavigator';
+import { AppContext } from '../../navigator/AppContext';
+import { user_login_pass } from '../../api/auth_apis';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   validateEmailPhone,
@@ -44,7 +44,7 @@ const LoginPassScreen = () => {
   };
 
   /// Handle navigation to HomeScreen
-  const {setNavigateToHome} = useContext(AppContext);
+  const { setNavigateToHome } = useContext(AppContext);
   const handleNavigateToHome = () => {
     setSkipLoading(true);
     setNavigateToHome(true);
@@ -166,8 +166,8 @@ const LoginPassScreen = () => {
           <LinearGradient
             style={styles.gradient}
             colors={['#FF671F', '#fff', '#046A38']}
-            start={{x: 0, y: 0}}
-            end={{x: 0, y: 1}}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
           />
         </View>
         <View style={styles.flagContainer}>
@@ -193,7 +193,7 @@ const LoginPassScreen = () => {
               style={styles.inputField}
             />
             {emailPhoneErrorMessageVisible ? (
-              <Text style={{color: 'red', marginTop: 5}}>
+              <Text style={{ color: 'red', marginTop: 5 }}>
                 {emailPhoneErrorMessage}
               </Text>
             ) : null}
@@ -219,7 +219,7 @@ const LoginPassScreen = () => {
               </Pressable>
             </View>
             {passwordErrorMessageVisible ? (
-              <Text style={{color: 'red', marginTop: 5}}>
+              <Text style={{ color: 'red', marginTop: 5 }}>
                 {passwordErrorMessage}
               </Text>
             ) : null}
@@ -261,7 +261,7 @@ const LoginPassScreen = () => {
         </View>
         {skipLoading ? (
           <ActivityIndicator
-            style={{marginTop: 20}}
+            style={{ marginTop: 20 }}
             size="small"
             color="#000"
           />
@@ -274,7 +274,7 @@ const LoginPassScreen = () => {
           </TouchableOpacity>
         )}
 
-        <View style={{flex: 1, alignItems: 'center', paddingBottom: 0}}>
+        <View style={{ flex: 1, alignItems: 'center', paddingBottom: 0 }}>
           {/* YOUR ENTIRE container here */}
           <View style={styles.container}>{/* all form stuff */}</View>
 
@@ -295,7 +295,7 @@ const LoginPassScreen = () => {
                 borderRadius: 8,
                 marginTop: 20,
               }}>
-              <Text style={{fontSize: 16, color: '#00796b'}}>
+              <Text style={{ fontSize: 16, color: '#00796b' }}>
                 📱 Contact us: 9365646114
               </Text>
             </View>
@@ -379,12 +379,12 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     ...(Platform.OS === 'ios'
       ? {
-          shadowColor: '#000',
-          shadowOffset: {width: 2, height: 4},
-          shadowOpacity: 0.2,
-          shadowRadius: 4,
-        }
-      : {elevation: 4}),
+        shadowColor: '#000',
+        shadowOffset: { width: 2, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+      }
+      : { elevation: 4 }),
   },
   inputFieldContainer: {
     backgroundColor: '#fff',
@@ -392,12 +392,12 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     ...(Platform.OS === 'ios'
       ? {
-          shadowColor: '#000',
-          shadowOffset: {width: 2, height: 4},
-          shadowOpacity: 0.2,
-          shadowRadius: 4,
-        }
-      : {elevation: 3}),
+        shadowColor: '#000',
+        shadowOffset: { width: 2, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+      }
+      : { elevation: 3 }),
   },
   inputFieldLebel: {
     color: '#000',
@@ -503,6 +503,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   skipIcon: {
-    transform: [{rotate: '180deg'}],
+    transform: [{ rotate: '180deg' }],
   },
 });
